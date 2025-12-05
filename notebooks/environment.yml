@@ -1,0 +1,13 @@
+name: hootsuite_ml_env
+channels:
+  - snowflake
+  - conda-forge
+dependencies:
+  - python=3.10
+  - snowflake-snowpark-python
+  - snowflake-ml-python
+  - pandas
+  - scikit-learn
+  - xgboost
+  - joblib
+
