@@ -4,6 +4,8 @@
 -- Purpose: Semantic views for Cortex Analyst text-to-SQL capabilities
 -- Syntax: VERIFIED against Snowflake documentation
 -- Rule: TABLE.SEMANTIC_NAME AS ACTUAL_COLUMN
+-- Rule: RELATIONSHIPS: target_table(target_col) REFERENCES source_table(pk_col)
+--       (Standard Foreign Key direction: Child references Parent)
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
@@ -27,11 +29,18 @@ CREATE OR REPLACE SEMANTIC VIEW SV_SOCIAL_PERFORMANCE
       PRIMARY KEY (campaign_id)
   )
   RELATIONSHIPS (
-    posts(post_id) REFERENCES engagements(post_id),
+    -- Syntax: <child_table_alias>(<fk_column>) REFERENCES <parent_table_alias>(<pk_column>)
+    -- Engagements belong to Posts
+    engagements(post_id) REFERENCES posts(post_id),
+    -- Posts belong to Profiles
     posts(profile_id) REFERENCES profiles(profile_id),
+    -- Posts belong to Organizations
     posts(organization_id) REFERENCES organizations(organization_id),
+    -- Posts belong to Campaigns
     posts(campaign_id) REFERENCES campaigns(campaign_id),
+    -- Profiles belong to Organizations
     profiles(organization_id) REFERENCES organizations(organization_id),
+    -- Campaigns belong to Organizations
     campaigns(organization_id) REFERENCES organizations(organization_id)
   )
   DIMENSIONS (
@@ -67,4 +76,3 @@ CREATE OR REPLACE SEMANTIC VIEW SV_SOCIAL_PERFORMANCE
 -- ============================================================================
 SELECT 'Hootsuite semantic views created successfully' AS STATUS;
 SHOW SEMANTIC VIEWS IN SCHEMA ANALYTICS;
-
