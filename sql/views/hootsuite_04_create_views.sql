@@ -18,7 +18,7 @@ SELECT
     p.post_id,
     p.organization_id,
     o.organization_name,
-    p.network,
+    sp.network,
     p.media_type,
     p.published_time,
     e.likes,
@@ -94,30 +94,6 @@ CREATE OR REPLACE VIEW V_OPTIMAL_TIME_FEATURES AS
 SELECT
     p.post_id,
     -- Features
-    o.industry, -- Categorical
-    p.network, -- Categorical
-    EXTRACT(hour from p.published_time) AS hour_of_day,
-    EXTRACT(dayofweek from p.published_time) AS day_of_week,
-    -- Target
-    e.engagement_rate
-FROM RAW.POSTS p
-JOIN RAW.ENGAGEMENTS e ON p.post_id = e.post_id
-JOIN RAW.ORGANIZATIONS o ON p.organization_id = o.organization_id
-JOIN RAW.SOCIAL_PROFILES sp ON p.profile_id = sp.profile_id -- Network comes from profile in tables? No, POSTS has network... wait check POSTS table
--- POSTS table definition: profile_id REFERENCES SOCIAL_PROFILES. POSTS doesn't have network column?
--- Let's check 02_create_tables.sql content I wrote.
--- POSTS table: post_id, organization_id, user_id, profile_id, campaign_id, post_text, media_type, ...
--- SOCIAL_PROFILES table: profile_id, network, ...
--- So I need to join SOCIAL_PROFILES to get network.
-;
-
--- Wait, I need to correct V_OPTIMAL_TIME_FEATURES because I was commenting in the SQL.
--- Let's rewrite V_OPTIMAL_TIME_FEATURES correctly.
-
-CREATE OR REPLACE VIEW V_OPTIMAL_TIME_FEATURES AS
-SELECT
-    p.post_id,
-    -- Features
     o.industry,
     sp.network,
     EXTRACT(hour from p.published_time) AS hour_of_day,
@@ -134,4 +110,3 @@ JOIN RAW.SOCIAL_PROFILES sp ON p.profile_id = sp.profile_id;
 -- ============================================================================
 SELECT 'Analytical and Feature Views created successfully' AS STATUS;
 SHOW VIEWS IN SCHEMA ANALYTICS;
-
