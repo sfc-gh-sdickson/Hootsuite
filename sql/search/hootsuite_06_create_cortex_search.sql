@@ -14,7 +14,7 @@ USE WAREHOUSE HOOTSUITE_WH;
 -- ============================================================================
 CREATE OR REPLACE CORTEX SEARCH SERVICE POSTS_SEARCH
   ON post_text
-  ATTRIBUTES network, media_type, status, user_id, campaign_id
+  ATTRIBUTES media_type, status, user_id, campaign_id
   WAREHOUSE = HOOTSUITE_WH
   TARGET_LAG = '1 hour'
   COMMENT = 'Semantic search over social media post content'
