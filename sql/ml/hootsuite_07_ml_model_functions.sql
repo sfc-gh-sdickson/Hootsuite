@@ -71,7 +71,7 @@ $$
     FROM (
         SELECT 
             TICKET_PRIORITY_CLASSIFIER!PREDICT(
-                issue_summary, category
+                category
             ) as pred
         FROM HOOTSUITE_INTELLIGENCE.ANALYTICS.V_TICKET_PRIORITY_FEATURES
         WHERE category_filter IS NULL OR category = category_filter
