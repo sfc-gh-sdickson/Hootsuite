@@ -76,7 +76,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_AGENT
     
     # ML Model Procedure Resources
     - tool_spec:
-        type: "cortex_tool"
+        type: "tool"
         name: "PredictPostEngagement"
         description: "Predicts the engagement rate for a specific post. Returns the predicted rate. Use when users ask to predict engagement, forecast performance, or score a post. Input: POST_ID."
         input_schema:
@@ -88,7 +88,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_AGENT
           required: ["POST_ID_INPUT"]
 
     - tool_spec:
-        type: "cortex_tool"
+        type: "tool"
         name: "PredictChurnRisk"
         description: "Predicts the churn risk for a customer organization. Returns HIGH RISK or LOW RISK. Use when users ask about churn, customer retention risk, or organization health. Input: ORGANIZATION_ID."
         input_schema:
@@ -100,7 +100,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_AGENT
           required: ["ORGANIZATION_ID_INPUT"]
 
     - tool_spec:
-        type: "cortex_tool"
+        type: "tool"
         name: "PredictOptimalTime"
         description: "Predicts the optimal posting times (day of week and hour) for a given network and industry. Returns top 3 times. Use when users ask when to post, best time to post, or scheduling optimization. Input: NETWORK, INDUSTRY."
         input_schema:
