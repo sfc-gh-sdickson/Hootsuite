@@ -1,7 +1,6 @@
 name: hootsuite-ml-env
 channels:
   - snowflake
-  - conda-forge
 dependencies:
   - python=3.9
   - snowflake-snowpark-python=1.12.0
