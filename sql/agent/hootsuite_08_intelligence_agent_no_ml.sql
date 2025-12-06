@@ -64,6 +64,18 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         name: "MarketingAssetSearch"
         description: "Searches marketing asset descriptions and creative content. Use when users ask about marketing assets, creative materials, or visual content."
 
+    # ML Model - Testing ONE function
+    - tool_spec:
+        type: "function"
+        name: "PredictChurnRisk"
+        description: "Predicts customer churn risk."
+        input_schema:
+          type: "object"
+          properties:
+            industry_filter:
+              type: "string"
+          required: []
+
   tool_resources:
     # Semantic View Resources
     CampaignAnalyst:
@@ -93,6 +105,9 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
       max_results: "10"
       title_column: "asset_name"
       id_column: "asset_id"
+
+    PredictChurnRisk:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
   $$;
 
 GRANT USAGE ON AGENT HOOTSUITE_INTELLIGENCE_AGENT TO ROLE SYSADMIN;
