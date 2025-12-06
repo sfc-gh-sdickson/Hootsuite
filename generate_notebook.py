@@ -1,4 +1,7 @@
-{
+import json
+import os
+
+notebook_content = {
  "cells": [
   {
    "cell_type": "markdown",
@@ -24,7 +27,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": None,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -75,7 +78,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": None,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -135,8 +138,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
-   "id": "afcbe6e4",
+   "execution_count": None,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -200,7 +202,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": None,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -256,7 +258,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": null,
+   "execution_count": None,
    "metadata": {},
    "outputs": [],
    "source": [
@@ -287,3 +289,6 @@
  "nbformat": 4,
  "nbformat_minor": 5
 }
+
+with open('notebooks/hootsuite_ml_models.ipynb', 'w') as f:
+    json.dump(notebook_content, f, indent=1)
