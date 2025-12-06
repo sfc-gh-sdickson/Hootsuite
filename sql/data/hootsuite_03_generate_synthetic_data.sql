@@ -11,6 +11,18 @@ USE SCHEMA RAW;
 USE WAREHOUSE HOOTSUITE_WH;
 
 -- ============================================================================
+-- Clear existing data
+-- ============================================================================
+TRUNCATE TABLE IF EXISTS MARKETING_ASSETS;
+TRUNCATE TABLE IF EXISTS KNOWLEDGE_BASE;
+TRUNCATE TABLE IF EXISTS SUPPORT_TICKETS;
+TRUNCATE TABLE IF EXISTS ENGAGEMENT_METRICS;
+TRUNCATE TABLE IF EXISTS POSTS;
+TRUNCATE TABLE IF EXISTS CAMPAIGNS;
+TRUNCATE TABLE IF EXISTS SOCIAL_ACCOUNTS;
+TRUNCATE TABLE IF EXISTS CUSTOMERS;
+
+-- ============================================================================
 -- Table 1: CUSTOMERS (5,000 rows)
 -- ============================================================================
 INSERT INTO CUSTOMERS
