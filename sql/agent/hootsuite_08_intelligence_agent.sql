@@ -97,7 +97,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
     # ML Model Procedures
     - tool_spec:
-        type: "function"
+        type: "generic"
         name: "PredictChurnRisk"
         description: "Predicts churn risk for customers. Returns risk distribution (low/medium/high). Use when users ask to predict churn, assess customer retention risk, or identify at-risk customers. Input: industry filter or NULL for all customers."
         input_schema:
@@ -109,7 +109,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
           required: []
 
     - tool_spec:
-        type: "function"
+        type: "generic"
         name: "PredictCampaignROI"
         description: "Predicts campaign ROI likelihood. Returns distribution of low/medium/high ROI. Use when users ask about campaign ROI predictions, campaign success forecasts, or ROI assessment. Input: objective filter (AWARENESS, CONVERSION, TRAFFIC) or NULL."
         input_schema:
@@ -121,7 +121,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
           required: []
 
     - tool_spec:
-        type: "function"
+        type: "generic"
         name: "ClassifyTicketPriority"
         description: "Classifies support ticket priority. Returns priority distribution. Use when users ask about ticket priority classification, urgency assessment, or support triage. Input: category filter or NULL."
         input_schema:
