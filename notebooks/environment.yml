@@ -1,0 +1,17 @@
+{
+  "name": "hootsuite-ml-env",
+  "channels": [
+    "snowflake",
+    "conda-forge"
+  ],
+  "dependencies": [
+    "python=3.10",
+    "snowflake-snowpark-python",
+    "snowflake-ml-python",
+    "scikit-learn",
+    "pandas",
+    "numpy",
+    "streamlit"
+  ]
+}
+
