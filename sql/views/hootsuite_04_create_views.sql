@@ -122,7 +122,6 @@ GROUP BY c.campaign_id, c.objective, c.budget_allocated, c.start_date, c.end_dat
 CREATE OR REPLACE VIEW V_TICKET_PRIORITY_FEATURES AS
 SELECT
     ticket_id,
-    issue_summary,
     category,
     CASE 
         WHEN priority = 'URGENT' THEN 3
