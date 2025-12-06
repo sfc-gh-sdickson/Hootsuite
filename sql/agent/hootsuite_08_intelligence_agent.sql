@@ -164,13 +164,13 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
     # ML Model Procedure Resources
     PredictChurnRisk:
-      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
 
     PredictCampaignROI:
-      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
 
     ClassifyTicketPriority:
-      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
   $$;
 
 -- ============================================================================
