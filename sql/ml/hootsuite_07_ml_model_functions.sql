@@ -24,7 +24,7 @@ $$
         SELECT 
             CHURN_RISK_PREDICTOR!PREDICT(
                 plan_type, industry, employee_count, annual_revenue_millions,
-                tenure_months, social_accounts_count, total_tickets_last_90d, urgent_ticket_rate
+                tenure_months, social_accounts_count, total_tickets_last_90d
             ) as pred
         FROM HOOTSUITE_INTELLIGENCE.ANALYTICS.V_CHURN_RISK_FEATURES
         WHERE industry_filter IS NULL OR industry = industry_filter
