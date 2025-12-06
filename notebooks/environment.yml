@@ -3,5 +3,9 @@ channels:
   - snowflake
 dependencies:
   - python=3.9
+  - snowflake-snowpark-python
   - snowflake-ml-python
+  - scikit-learn
+  - pandas
+  - numpy
   - streamlit
