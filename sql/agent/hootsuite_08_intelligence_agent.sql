@@ -1,17 +1,21 @@
 -- ============================================================================
 -- Hootsuite Intelligence Agent - Agent Configuration
 -- ============================================================================
--- Agent: HOOTSUITE_INTELLIGENCE_AGENT
--- Tools: 3 Semantic Views, 3 Cortex Search, 3 ML Models
+-- Purpose: Create Snowflake Intelligence Agent with semantic views and ML tools
+-- Agent: ORIGENCE_LENDING_AGENT
+-- Tools: 3 semantic views + 3 Cortex Search services + 3 ML model procedures
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
 USE SCHEMA ANALYTICS;
 USE WAREHOUSE HOOTSUITE_WH;
 
-CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
-  COMMENT = 'Hootsuite intelligence agent for customer, campaign, and support analytics'
-  PROFILE = '{"display_name": "Hootsuite AI", "avatar": "owl-icon.png", "color": "blue"}'
+-- ============================================================================
+-- Create Cortex Agent
+-- ============================================================================
+CREATE OR REPLACE AGENT ORIGENCE_LENDING_AGENT
+  COMMENT = 'Hootsuite customer social media intelligence agent with ML predictions and semantic search'
+  PROFILE = '{"display_name": "Hootsuite Lending Assistant", "avatar": "lending-icon.png", "color": "blue"}'
   FROM SPECIFICATION
   $$
   models:
@@ -23,144 +27,205 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
       tokens: 32000
 
   instructions:
-    response: "You are a Hootsuite business intelligence expert. Provide data-driven answers about customers, campaigns, and support. Use specific metrics."
-    orchestration: "For campaign ROI use SV_CAMPAIGN_ANALYTICS. For customer churn/health use SV_CUSTOMER_HEALTH_ANALYTICS. For social stats use SV_SOCIAL_PERFORMANCE. For ticket search use SUPPORT_TICKETS_SEARCH. For help articles use KNOWLEDGE_BASE_SEARCH. For asset search use MARKETING_ASSETS_SEARCH. For predictions use the specific ML function."
-    system: "You help Hootsuite teams analyze business performance."
+    response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about loans, customers, and member data. When using ML predictions, explain the risk levels clearly. Always cite data sources."
+    orchestration: "For loan performance questions use SV_LOAN_PERFORMANCE. For member credit analysis use SV_MEMBER_CREDIT_PROFILE. For customer metrics use SV_CREDIT_UNION_METRICS. For underwriting notes search use UNDERWRITING_NOTES_SEARCH. For loan documents search use LOAN_DOCUMENTS_SEARCH. For compliance policies search use COMPLIANCE_POLICIES_SEARCH. For ML predictions use the appropriate prediction procedure."
+    system: "You are an expert social media intelligence agent for Hootsuite, a Credit Union Service Organization (CUSO) serving 1,100+ customers with $593B+ in loan funding. You help analyze loan performance, member credit profiles, fraud detection, and compliance. Always provide data-driven insights."
     sample_questions:
-      - question: "How many active customers do we have in the Retail industry?"
-        answer: "I'll query the customer data to count active Retail customers."
-      - question: "What is the total budget allocated to Awareness campaigns?"
-        answer: "I'll sum the budget for all Awareness objective campaigns."
-      - question: "Show me the top 5 social accounts by follower count."
-        answer: "I'll query social accounts and rank by followers."
-      - question: "List all open support tickets with Urgent priority."
-        answer: "I'll filter tickets by status and priority."
-      - question: "Count the number of posts published on Instagram last month."
-        answer: "I'll filter posts by platform and date."
-      - question: "Compare the average engagement rate of Video vs. Image posts for Technology customers."
-        answer: "I'll segment engagement by media type and industry."
-      - question: "What is the churn risk distribution for Enterprise customers compared to Professional plans?"
-        answer: "I'll analyze churn scores grouped by plan type."
-      - question: "Which campaign objective yields the highest ROI based on click-through rates?"
-        answer: "I'll calculate ROI metrics by campaign objective."
-      - question: "Correlate the number of open support tickets with customer churn risk scores."
-        answer: "I'll analyze the relationship between tickets and churn risk."
-      - question: "Identify the regions with the highest revenue but also highest churn risk."
-        answer: "I'll rank regions by revenue and churn risk."
-      - question: "Predict the churn risk for all customers in the Manufacturing industry."
-        answer: "I'll use the churn prediction model filtered by Manufacturing."
-      - question: "Forecast the ROI for our active Conversion campaigns."
-        answer: "I'll use the ROI predictor on Conversion campaigns."
-      - question: "Classify the priority of tickets related to Billing issues."
-        answer: "I'll use the priority classifier filtered by Billing category."
-      - question: "What is the predicted risk profile for customers with less than 6 months tenure?"
-        answer: "I'll use the churn predictor on customers with short tenure."
-      - question: "Find support tickets related to login failure and their resolution notes."
-        answer: "I'll search the support tickets for login-related issues."
-  
+      - question: "How many loan applications did we receive this month?"
+        answer: "I'll query the loan applications data to get the count for the current month."
+      - question: "What is the average loan amount for auto loans?"
+        answer: "I'll calculate the average loan amount for auto loan type from the loans data."
+      - question: "Which customers have the highest loan volumes?"
+        answer: "I'll analyze loan volumes by customer and show the top performers."
+      - question: "Show me the top 5 dealers by loan count"
+        answer: "I'll query dealer data and rank by total loan count, showing the top 5."
+      - question: "What is our current loan approval rate?"
+        answer: "I'll calculate the percentage of approved applications from total applications."
+      - question: "What is the month-over-month growth in loan originations by customer tier?"
+        answer: "I'll analyze loan origination trends by tier and calculate MoM growth rates."
+      - question: "Compare approval rates across different credit score bands and loan types"
+        answer: "I'll segment approvals by credit score ranges and loan types to show approval rate patterns."
+      - question: "Which dealers have the highest average loan amounts and lowest default rates?"
+        answer: "I'll analyze dealer performance across multiple metrics to identify top performers."
+      - question: "Show me loan performance trends by member age group and loan purpose"
+        answer: "I'll segment loan performance by member demographics and loan purpose."
+      - question: "What is the relationship between debt-to-income ratio and loan defaults?"
+        answer: "I'll analyze default rates across different DTI ranges to show the correlation."
+      - question: "Predict the default risk for auto loans currently in our portfolio"
+        answer: "I'll use the loan default prediction model to analyze auto loans and provide risk distribution."
+      - question: "Which loan applications in review status are most likely to be approved?"
+        answer: "I'll use the loan approval predictor to score applications in review status."
+      - question: "Identify potentially fraudulent applications submitted in the last 30 days"
+        answer: "I'll use the fraud detection model to analyze recent applications and flag suspicious ones."
+      - question: "What is the predicted default rate for loans with DTI greater than 40%?"
+        answer: "I'll use the default predictor on high-DTI loans to forecast default risk."
+      - question: "Show me high-risk loans that were approved in the last quarter"
+        answer: "I'll combine approval and default predictions to identify risky approved loans."
+
   tools:
-    # Semantic Views
+    # Semantic Views for Cortex Analyst (Text-to-SQL)
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "CampaignAnalyst"
-        description: "Analyzes marketing campaign performance, ROI, and budget."
+        name: "LoanPerformanceAnalyst"
+        description: "Analyzes loan portfolio performance, delinquency rates, default rates, and loan status. Use for questions about loan performance, risk, defaults, delinquencies, and portfolio metrics."
     
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "CustomerHealthAnalyst"
-        description: "Analyzes customer churn risk, revenue, and health metrics."
+        name: "MemberCreditAnalyst"
+        description: "Analyzes member demographics, credit profiles, and loan application patterns. Use for questions about member credit scores, income levels, debt-to-income ratios, approval rates, and application trends."
     
     - tool_spec:
         type: "cortex_analyst_text_to_sql"
-        name: "SocialPerformanceAnalyst"
-        description: "Analyzes social media engagement and platform stats."
+        name: "CreditUnionMetricsAnalyst"
+        description: "Analyzes customer portfolio performance, dealer partnerships, and lending metrics. Use for questions about customer performance, dealer loan volumes, partnership metrics, and regional analysis."
 
-    # Cortex Search
+    # Cortex Search Services
     - tool_spec:
         type: "cortex_search"
-        name: "SupportTicketSearch"
-        description: "Search customer support tickets for issues."
-
-    - tool_spec:
-        type: "cortex_search"
-        name: "KnowledgeBaseSearch"
-        description: "Search help articles and documentation."
+        name: "UnderwritingNotesSearch"
+        description: "Searches unstructured underwriting decision notes and rationale. Use when users ask about underwriting decisions, credit analysis, risk assessment notes, or decision factors."
 
     - tool_spec:
         type: "cortex_search"
-        name: "AssetSearch"
-        description: "Search marketing assets descriptions."
+        name: "LoanDocumentsSearch"
+        description: "Searches loan documentation including contracts, verification documents, and supporting materials. Use when users ask about loan documents, verification, contracts, or documentation."
 
-    # ML Models
+    - tool_spec:
+        type: "cortex_search"
+        name: "CompliancePoliciesSearch"
+        description: "Searches compliance policies, regulatory requirements, and lending guidelines. Use when users ask about policies, regulations, compliance requirements, or lending standards."
+
+    # ML Model Procedures
     - tool_spec:
         type: "function"
-        name: "PredictChurnRisk"
-        description: "Predict customer churn risk distribution. Input: industry_filter or NULL."
+        name: "PredictLoanDefaultRisk"
+        description: "Predicts default risk for loans in the portfolio. Returns risk distribution (low/medium/high/critical). Use when users ask to predict defaults, assess loan risk, or identify high-risk loans. Input: loan_type filter (AUTO_LOAN, PERSONAL_LOAN, HOME_EQUITY) or NULL for all loans."
         input_schema:
           type: "object"
           properties:
-            industry_filter:
+            loan_type_filter:
               type: "string"
+              description: "Filter by loan type: AUTO_LOAN, PERSONAL_LOAN, HOME_EQUITY, or NULL for all"
           required: []
 
     - tool_spec:
         type: "function"
-        name: "PredictCampaignROI"
-        description: "Predict campaign ROI distribution. Input: objective_filter or NULL."
+        name: "PredictLoanApproval"
+        description: "Predicts approval likelihood for loan applications. Returns distribution of likely deny/review/approve. Use when users ask about approval predictions, application likelihood, or approval forecasts. Input: application status filter (PENDING, APPROVED, DENIED) or NULL."
         input_schema:
           type: "object"
           properties:
-            objective_filter:
+            application_status_filter:
               type: "string"
+              description: "Filter by application status: PENDING, APPROVED, DENIED, or NULL for all"
           required: []
 
     - tool_spec:
         type: "function"
-        name: "ClassifyTicketPriority"
-        description: "Classify support ticket priority. Input: category_filter or NULL."
+        name: "DetectFraudRisk"
+        description: "Detects potentially fraudulent loan applications. Returns clean/suspicious/high-risk distribution and flagged application IDs. Use when users ask about fraud detection, suspicious applications, or fraud risk. Input: number of days to look back (default 30)."
         input_schema:
           type: "object"
           properties:
-            category_filter:
-              type: "string"
+            days_back:
+              type: "number"
+              description: "Number of days to analyze (default 30)"
           required: []
 
   tool_resources:
-    CampaignAnalyst:
-      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_CAMPAIGN_ANALYTICS"
+    # Semantic View Resources
+    LoanPerformanceAnalyst:
+      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_LOAN_PERFORMANCE"
     
-    CustomerHealthAnalyst:
-      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_CUSTOMER_HEALTH_ANALYTICS"
+    MemberCreditAnalyst:
+      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_MEMBER_CREDIT_PROFILE"
     
-    SocialPerformanceAnalyst:
-      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_SOCIAL_PERFORMANCE"
+    CreditUnionMetricsAnalyst:
+      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_CREDIT_UNION_METRICS"
 
-    SupportTicketSearch:
-      name: "HOOTSUITE_INTELLIGENCE.RAW.SUPPORT_TICKETS_SEARCH"
+    # Cortex Search Resources
+    UnderwritingNotesSearch:
+      name: "HOOTSUITE_INTELLIGENCE.RAW.UNDERWRITING_NOTES_SEARCH"
       max_results: "10"
-      title_column: "issue_summary"
-      id_column: "ticket_id"
+      title_column: "note_category"
+      id_column: "note_id"
 
-    KnowledgeBaseSearch:
-      name: "HOOTSUITE_INTELLIGENCE.RAW.KNOWLEDGE_BASE_SEARCH"
+    LoanDocumentsSearch:
+      name: "HOOTSUITE_INTELLIGENCE.RAW.LOAN_DOCUMENTS_SEARCH"
+      max_results: "10"
+      title_column: "document_type"
+      id_column: "document_id"
+
+    CompliancePoliciesSearch:
+      name: "HOOTSUITE_INTELLIGENCE.RAW.COMPLIANCE_POLICIES_SEARCH"
       max_results: "5"
-      title_column: "title"
-      id_column: "article_id"
+      title_column: "policy_title"
+      id_column: "policy_id"
 
-    AssetSearch:
-      name: "HOOTSUITE_INTELLIGENCE.RAW.MARKETING_ASSETS_SEARCH"
-      max_results: "10"
-      title_column: "asset_name"
-      id_column: "asset_id"
+    # ML Model Procedure Resources
+    PredictLoanDefaultRisk:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_LOAN_DEFAULT_RISK"
 
-    PredictChurnRisk:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
-    
-    PredictCampaignROI:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
-    
-    ClassifyTicketPriority:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
+    PredictLoanApproval:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_LOAN_APPROVAL"
+
+    DetectFraudRisk:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.DETECT_FRAUD_RISK"
   $$;
 
-GRANT USAGE ON AGENT HOOTSUITE_INTELLIGENCE_AGENT TO ROLE SYSADMIN;
+-- ============================================================================
+-- Grant Permissions
+-- ============================================================================
+GRANT USAGE ON AGENT ORIGENCE_LENDING_AGENT TO ROLE SYSADMIN;
+GRANT USAGE ON AGENT ORIGENCE_LENDING_AGENT TO ROLE PUBLIC;
+
+-- ============================================================================
+-- Verification
+-- ============================================================================
+SHOW AGENTS IN SCHEMA ANALYTICS;
+
+DESC AGENT ORIGENCE_LENDING_AGENT;
+
+SELECT 'Hootsuite Intelligence Agent created successfully' AS STATUS;
+
+-- ============================================================================
+-- Test Agent (Basic Query)
+-- ============================================================================
+
+/*
+-- Test simple question
+SELECT SNOWFLAKE.CORTEX.COMPLETE_AGENT(
+  'HOOTSUITE_INTELLIGENCE.ANALYTICS.ORIGENCE_LENDING_AGENT',
+  'How many loans do we have in our portfolio?'
+);
+
+-- Test complex question
+SELECT SNOWFLAKE.CORTEX.COMPLETE_AGENT(
+  'HOOTSUITE_INTELLIGENCE.ANALYTICS.ORIGENCE_LENDING_AGENT',
+  'What is the default rate by customer tier?'
+);
+
+-- Test ML prediction
+SELECT SNOWFLAKE.CORTEX.COMPLETE_AGENT(
+  'HOOTSUITE_INTELLIGENCE.ANALYTICS.ORIGENCE_LENDING_AGENT',
+  'Predict the default risk for auto loans'
+);
+
+-- Test search
+SELECT SNOWFLAKE.CORTEX.COMPLETE_AGENT(
+  'HOOTSUITE_INTELLIGENCE.ANALYTICS.ORIGENCE_LENDING_AGENT',
+  'Find underwriting notes about credit score concerns'
+);
+*/
+
+-- ============================================================================
+-- Notes
+-- ============================================================================
+-- The agent has 9 tools configured:
+--   - 3 Semantic Views (Cortex Analyst for text-to-SQL)
+--   - 3 Cortex Search Services (for unstructured data)
+--   - 3 ML Model Procedures (for predictions)
+--
+-- Sample questions are in origence_questions.md
+-- Setup guide is in ORIGENCE_SETUP_GUIDE.md
+-- ============================================================================
