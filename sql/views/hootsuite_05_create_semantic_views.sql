@@ -29,7 +29,10 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CAMPAIGN_ANALYTICS
     campaigns.campaign_name AS campaigns.campaign_name,
     campaigns.objective AS campaigns.objective,
     campaigns.status AS campaigns.status,
-    posts.media_type AS posts.media_type
+    campaigns.start_date AS campaigns.start_date,
+    campaigns.end_date AS campaigns.end_date,
+    posts.media_type AS posts.media_type,
+    posts.published_date AS posts.published_time::DATE
   )
   METRICS (
     campaigns.total_budget AS SUM(campaigns.budget_allocated),
@@ -61,7 +64,9 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_HEALTH_ANALYTICS
     customers.region AS customers.region,
     customers.active_status AS customers.active_status,
     tickets.priority AS tickets.priority,
-    tickets.category AS tickets.category
+    tickets.category AS tickets.category,
+    tickets.status AS tickets.status,
+    tickets.created_date AS tickets.created_date::DATE
   )
   METRICS (
     customers.total_customers AS COUNT(DISTINCT customers.customer_id),
@@ -96,7 +101,9 @@ CREATE OR REPLACE SEMANTIC VIEW SV_SOCIAL_PERFORMANCE
     accounts.platform AS accounts.platform,
     accounts.verified_status AS accounts.verified_status,
     customers.industry AS customers.industry,
-    posts.media_type AS posts.media_type
+    posts.media_type AS posts.media_type,
+    posts.status AS posts.status,
+    posts.published_date AS posts.published_time::DATE
   )
   METRICS (
     accounts.total_followers AS SUM(accounts.follower_count),
