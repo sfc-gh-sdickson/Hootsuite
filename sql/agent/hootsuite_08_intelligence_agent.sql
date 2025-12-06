@@ -164,13 +164,28 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
     # ML Model Procedure Resources
     PredictChurnRisk:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
+      type: "function"
+      identifier: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "HOOTSUITE_WH"
+        query_timeout: 60
 
     PredictCampaignROI:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
+      type: "function"
+      identifier: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "HOOTSUITE_WH"
+        query_timeout: 60
 
     ClassifyTicketPriority:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
+      type: "function"
+      identifier: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "HOOTSUITE_WH"
+        query_timeout: 60
   $$;
 
 -- ============================================================================
