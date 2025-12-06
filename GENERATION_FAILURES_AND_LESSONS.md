@@ -1,17 +1,17 @@
-## Failure Category 17: Snowpark ML Case Sensitivity
-  17|
-  18|### 17.1 KeyError in Feature Engineering Pipelines
-  19|
-  20|**What I did wrong:**
-  21|- Defined Snowpark ML pipelines (OrdinalEncoder, OneHotEncoder) using mixed-case or assumed-lowercase column names (e.g., `'Objective'`).
-  22|- Failed to recall that Snowflake unquoted identifiers are implicitly **UPPERCASE**.
-  23|- This caused `KeyError: 'OBJECTIVE'` during the `fit()` phase because the dataframe from Snowflake contained `OBJECTIVE`, but the encoder was looking for something else (or vice-versa if I passed lowercase).
-  24|
-  25|**What I should have done:**
-  26|- Always treat Snowflake column names as **UPPERCASE** in Python lists unless they were explicitly created with double quotes.
-  27|- Verify the schema of the input DataFrame (`df.columns`) before defining the pipeline.
-  28|- Use uppercase string literals for all `input_cols` and `label_cols` parameters in Snowpark ML estimators.
-  29|
-  30|**Rule:** When defining Snowpark ML pipelines on Snowflake data, ALL column name references must be UPPERCASE (e.g., `input_cols=["CATEGORY"]`, not `["Category"]`).
-  31|
-  32|---
+## Failure Category 18: Snowflake Notebook Package Conflicts
+  18|
+  19|### 18.1 "One or more package conflicts were detected"
+  20|
+  21|**What I did wrong:**
+  22|- Tried to manually pin "compatible" versions (e.g., `scikit-learn=1.3.0`, `pandas=2.1.4`) based on external documentation or search results.
+  23|- The specific combination of pinned versions conflicted with the underlying Snowflake runtime environment or other implicit dependencies.
+  24|- This caused repeated failures where the UDF creation failed due to "Packages not found" or "Package conflicts".
+  25|
+  26|**What I should have done:**
+  27|- **TRUST THE SOLVER:** For Snowflake Notebooks, specify *only* the package names (e.g., `- scikit-learn`, `- pandas`) without version numbers in `environment.yml`.
+  28|- Let the Snowflake server-side Conda environment resolve the best compatible versions for the current runtime.
+  29|- Only pin versions if absolutely critical for code behavior (and verified to exist in that specific runtime).
+  30|
+  31|**Rule:** In `environment.yml` for Snowflake Notebooks, list package names WITHOUT version numbers to avoid conflicts.
+  32|
+  33|---
