@@ -1,3 +1,5 @@
+![Snowflake Logo](Snowflake_Logo.svg)
+
 # Hootsuite Intelligence Agent Solution
 
 **An AI-Powered Analytics Solution for Social Media Management**

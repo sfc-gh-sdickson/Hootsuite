@@ -1,3 +1,5 @@
+![Snowflake Logo](../Snowflake_Logo.svg)
+
 # Hootsuite Intelligence Agent - Setup Guide
 
 ## Overview

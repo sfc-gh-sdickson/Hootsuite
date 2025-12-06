@@ -1,3 +1,5 @@
+![Snowflake Logo](../Snowflake_Logo.svg)
+
 # Hootsuite Intelligence Agent - Sample Questions
 
 This document contains 15 sample questions that can be answered by the Hootsuite Intelligence Agent, organized by complexity and capability.
