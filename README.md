@@ -2,45 +2,80 @@
 
 # Hootsuite Intelligence Agent Solution
 
-**An AI-Powered Analytics Solution for Social Media Management**
+**An Enterprise-Grade AI Analytics Platform for Social Media Management**
 
-This solution provides a complete Snowflake Intelligence Agent implementation for **Hootsuite**, enabling natural language queries over customer, campaign, and social data with ML-powered insights.
+This repository contains a complete, production-ready implementation of a **Snowflake Intelligence Agent** tailored for Hootsuite. It unifies structured analytics, unstructured data search, and machine learning predictions into a single conversational interface.
 
-## Repository Structure
+---
 
-```
+## 🏗 System Architecture
+
+The solution leverages the full power of the Snowflake AI Data Cloud, integrating **Cortex Analyst** for structured queries, **Cortex Search** for vector-based document retrieval, and **Snowpark ML** for predictive modeling.
+
+![Architecture Diagram](docs/architecture_diagram.svg)
+
+### Key Capabilities
+
+| Component | Technology | Functionality |
+|-----------|------------|---------------|
+| **Descriptive Analytics** | **Cortex Analyst** | Natural language queries over 3 Semantic Views (Campaigns, Customer Health, Social Performance). |
+| **Semantic Search** | **Cortex Search** | Vector search over Support Tickets, Knowledge Base articles, and Marketing Assets. |
+| **Predictive AI** | **Snowpark ML** | 3 Custom ML Models: Churn Risk Prediction, Campaign ROI Forecasting, Ticket Priority Classification. |
+| **Orchestration** | **Cortex Agents** | A unified agent that intelligently routes queries to the correct tool or model. |
+
+---
+
+## 📂 Repository Structure
+
+```text
 .
 ├── docs/
-│   ├── HOOTSUITE_SETUP_GUIDE.md    # Step-by-step installation instructions
-│   ├── PROJECT_SUMMARY.md          # High-level overview of capabilities
-│   └── hootsuite_questions.md      # Sample questions for testing
+│   ├── HOOTSUITE_SETUP_GUIDE.md    # 📚 DETAILED SETUP INSTRUCTIONS
+│   ├── PROJECT_SUMMARY.md          # High-level executive summary
+│   ├── hootsuite_questions.md      # Test bank of 15 sample questions
+│   ├── architecture_diagram.svg    # System architecture visualization
+│   └── setup_flow_diagram.svg      # Setup process visualization
 ├── notebooks/
-│   ├── hootsuite_ml_models.ipynb   # Snowpark ML training notebook
-│   └── environment.yml             # Conda environment dependencies
+│   ├── hootsuite_ml_models.ipynb   # 🐍 Python notebook for ML training
+│   └── environment.yml             # Conda environment specification
 ├── sql/
-│   ├── agent/                      # Agent DDL and configuration
-│   ├── data/                       # Synthetic data generation
-│   ├── ml/                         # SQL wrappers for ML models
-│   ├── search/                     # Cortex Search Service setup
-│   ├── setup/                      # Database and Table DDL
-│   └── views/                      # Semantic, Analytical, and Feature views
+│   ├── setup/                      # 1️⃣ Database & Table creation
+│   ├── data/                       # 2️⃣ Synthetic Data Generation (~200k rows)
+│   ├── views/                      # 3️⃣ Analytical & Semantic Views
+│   ├── search/                     # 4️⃣ Cortex Search Services
+│   ├── ml/                         # 5️⃣ SQL Wrappers for ML Models
+│   └── agent/                      # 6️⃣ Final Agent Configuration
 └── README.md                       # This file
 ```
 
-## Quick Start
+---
 
-1.  **Setup Database**: Run `sql/setup/` scripts to create the schema and tables.
-2.  **Generate Data**: Run `sql/data/hootsuite_03_generate_synthetic_data.sql`.
-3.  **Deploy Analytics**: Run `sql/views/` scripts to create Semantic Views.
-4.  **Train Models**: Upload and run the notebook in `notebooks/`.
-5.  **Configure Agent**: Run `sql/agent/hootsuite_08_intelligence_agent.sql`.
+## 🚀 Getting Started
 
-For detailed instructions, please refer to [docs/HOOTSUITE_SETUP_GUIDE.md](docs/HOOTSUITE_SETUP_GUIDE.md).
+Follow the **[Detailed Setup Guide](docs/HOOTSUITE_SETUP_GUIDE.md)** for step-by-step instructions.
 
-## Features
+### Deployment Workflow
 
-*   **3 Semantic Views** for structured data analysis.
-*   **3 Cortex Search Services** for unstructured document retrieval.
-*   **3 Machine Learning Models** for predictive analytics.
-*   **Synthetic Data Generator** for realistic testing.
+![Setup Flow](docs/setup_flow_diagram.svg)
 
+1.  **Initialize Environment**: Create database, schema, and tables.
+2.  **Hydrate Data**: Generate 200,000+ rows of synthetic production-grade data.
+3.  **Deploy Semantic Layer**: Create views optimized for LLM understanding.
+4.  **Enable Search**: Index unstructured text data using Cortex Search.
+5.  **Train Models**: Train and register ML models using Snowpark.
+6.  **Launch Agent**: Compile the final Intelligence Agent.
+
+---
+
+## 💡 Example Use Cases
+
+Once deployed, the agent can answer complex business questions:
+
+*   **"Which marketing campaigns are predicted to have High ROI?"** (ML + Semantic View)
+*   **"Show me the churn risk distribution for Retail customers."** (Semantic View)
+*   **"Find support tickets about 'login issues' and summarize the resolutions."** (Cortex Search)
+*   **"What is the average engagement rate for video posts on Instagram?"** (Semantic View)
+
+---
+
+**Built for Hootsuite | Powered by Snowflake Cortex**
