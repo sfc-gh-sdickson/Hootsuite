@@ -13,7 +13,7 @@ USE WAREHOUSE HOOTSUITE_WH;
 -- ============================================================================
 -- Create Cortex Agent
 -- ============================================================================
-CREATE OR REPLACE AGENT HOOTSUITE_SOCIAL_AGENT
+CREATE OR REPLACE AGENT HOOTSUITE_AGENT
   COMMENT = 'Hootsuite social media intelligence agent with ML predictions and semantic search'
   PROFILE = '{"display_name": "Hootsuite Intelligence Assistant", "avatar": "hootsuite-icon.png", "color": "blue"}'
   FROM SPECIFICATION
@@ -146,14 +146,14 @@ CREATE OR REPLACE AGENT HOOTSUITE_SOCIAL_AGENT
 -- ============================================================================
 -- Grant Permissions
 -- ============================================================================
-GRANT USAGE ON AGENT HOOTSUITE_SOCIAL_AGENT TO ROLE SYSADMIN;
-GRANT USAGE ON AGENT HOOTSUITE_SOCIAL_AGENT TO ROLE PUBLIC;
+GRANT USAGE ON AGENT HOOTSUITE_AGENT TO ROLE SYSADMIN;
+GRANT USAGE ON AGENT HOOTSUITE_AGENT TO ROLE PUBLIC;
 
 -- ============================================================================
 -- Verification
 -- ============================================================================
 SHOW AGENTS IN SCHEMA ANALYTICS;
 
-DESC AGENT HOOTSUITE_SOCIAL_AGENT;
+DESC AGENT HOOTSUITE_AGENT;
 
 SELECT 'Hootsuite Intelligence Agent created successfully' AS STATUS;
