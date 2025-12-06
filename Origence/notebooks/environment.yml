@@ -1,0 +1,7 @@
+name: app_environment
+channels:
+  - snowflake
+dependencies:
+  - pandas=2.2.3
+  - scikit-learn=1.6.1
+  - snowflake-ml-python=1.19.0
