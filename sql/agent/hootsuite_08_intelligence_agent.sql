@@ -28,8 +28,8 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
   instructions:
     response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about customers, campaigns, and engagement data. When using ML predictions, explain the risk levels clearly. Always cite data sources."
-    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health analysis use CustomerHealthAnalyst. For social performance metrics, posts, engagement rates, and social media platform data use SocialPerformanceAnalyst - it includes posts.published_date for time filtering and profiles.network for platform filtering (FACEBOOK, TWITTER, LINKEDIN, INSTAGRAM, TIKTOK). For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function."
-    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. Always provide data-driven insights. The data includes posts with published_date timestamps and social profiles with network types (FACEBOOK, TWITTER, LINKEDIN, INSTAGRAM, TIKTOK)."
+    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health analysis use CustomerHealthAnalyst. For social performance metrics, posts, engagement rates, and social media platform data use SocialPerformanceAnalyst - it includes posts.published_date for time filtering and accounts.platform for platform filtering (values: Facebook, Twitter, LinkedIn, Instagram, TikTok - use exact case). For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function."
+    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. Always provide data-driven insights. The data includes posts with published_date timestamps and social accounts with platform values: Facebook, Twitter, LinkedIn, Instagram, TikTok (use exact case for filtering)."
     sample_questions:
       - question: "How many active customers do we have in the Retail industry?"
         answer: "I'll use CustomerHealthAnalyst to count organizations where organizations.is_active is TRUE and organizations.industry is 'Retail'."
@@ -40,7 +40,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
       - question: "List all open support tickets with Urgent priority."
         answer: "I'll use CustomerHealthAnalyst to select tickets where tickets.status is 'OPEN' and tickets.priority is 'URGENT'."
       - question: "Count the number of posts published on Instagram last month."
-        answer: "I'll use SocialPerformanceAnalyst to count posts where profiles.network equals 'INSTAGRAM' and posts.published_date is in the last month."
+        answer: "I'll use SocialPerformanceAnalyst to count posts where accounts.platform equals 'Instagram' and posts.published_date is in the last month."
       - question: "Compare the average engagement rate of Video vs. Image posts for Technology customers."
         answer: "I'll use SocialPerformanceAnalyst to calculate average engagement rate grouped by posts.media_type where organizations.industry is 'Technology'."
       - question: "What is the churn risk distribution for Enterprise customers compared to Professional plans?"

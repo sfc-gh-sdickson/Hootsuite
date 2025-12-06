@@ -82,11 +82,12 @@ INSERT INTO SOCIAL_ACCOUNTS
 SELECT
     'ACC' || LPAD(SEQ4()::VARCHAR, 8, '0') AS account_id,
     (SELECT customer_id FROM CUSTOMERS ORDER BY RANDOM() LIMIT 1) AS customer_id,
-    CASE UNIFORM(1, 4, RANDOM())
-        WHEN 1 THEN 'TWITTER'
-        WHEN 2 THEN 'LINKEDIN'
-        WHEN 3 THEN 'FACEBOOK'
-        ELSE 'INSTAGRAM'
+    CASE UNIFORM(1, 5, RANDOM())
+        WHEN 1 THEN 'Twitter'
+        WHEN 2 THEN 'LinkedIn'
+        WHEN 3 THEN 'Facebook'
+        WHEN 4 THEN 'Instagram'
+        ELSE 'TikTok'
     END AS platform,
     '@handle_' || SEQ4() AS account_handle,
     UNIFORM(100, 1000000, RANDOM()) AS follower_count,
@@ -148,7 +149,8 @@ INSERT INTO POSTS
 WITH post_gen AS (
     SELECT 
         ROW_NUMBER() OVER (ORDER BY SEQ4()) AS rn,
-        DATEADD(minute, -UNIFORM(0, 525600, RANDOM()), CURRENT_TIMESTAMP()) AS scheduled_time,
+        -- Generate posts from 90 days ago to 30 days in the future
+        DATEADD(day, -UNIFORM(0, 90, RANDOM()), CURRENT_DATE()) AS scheduled_time,
         CASE UNIFORM(1, 4, RANDOM())
             WHEN 1 THEN 'IMAGE'
             WHEN 2 THEN 'VIDEO'
