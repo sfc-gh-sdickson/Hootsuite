@@ -94,15 +94,52 @@ $$
 $$;
 
 -- ============================================================================
--- Verification Tests
+-- Function Test Calls (Uncomment to test)
 -- ============================================================================
-SELECT '🔄 Testing ML functions...' as status;
+-- These test calls are commented out for reference. Uncomment when you need to test the functions.
 
-SELECT PREDICT_CHURN_RISK(NULL) as churn_risk_result;
-SELECT PREDICT_CAMPAIGN_ROI(NULL) as roi_result;
-SELECT CLASSIFY_TICKET_PRIORITY(NULL) as priority_result;
+-- Test 1: PREDICT_CHURN_RISK Function
+-- --------------------------------------
+-- Test with all customers
+-- SELECT PREDICT_CHURN_RISK(NULL) as all_customers_churn;
 
-SELECT '✅ All ML functions created and tested successfully!' as final_status;
+-- Test with specific industries
+-- SELECT PREDICT_CHURN_RISK('RETAIL') as retail_churn;
+-- SELECT PREDICT_CHURN_RISK('TECHNOLOGY') as technology_churn;
+-- SELECT PREDICT_CHURN_RISK('HEALTHCARE') as healthcare_churn;
+-- SELECT PREDICT_CHURN_RISK('MANUFACTURING') as manufacturing_churn;
+-- SELECT PREDICT_CHURN_RISK('EDUCATION') as education_churn;
+
+-- Test 2: PREDICT_CAMPAIGN_ROI Function
+-- --------------------------------------
+-- Test with all campaigns
+-- SELECT PREDICT_CAMPAIGN_ROI(NULL) as all_campaigns_roi;
+
+-- Test with specific objectives
+-- SELECT PREDICT_CAMPAIGN_ROI('AWARENESS') as awareness_roi;
+-- SELECT PREDICT_CAMPAIGN_ROI('CONVERSION') as conversion_roi;
+-- SELECT PREDICT_CAMPAIGN_ROI('TRAFFIC') as traffic_roi;
+
+-- Test 3: CLASSIFY_TICKET_PRIORITY Function
+-- ------------------------------------------
+-- Test with all tickets
+-- SELECT CLASSIFY_TICKET_PRIORITY(NULL) as all_tickets_priority;
+
+-- Test with specific categories
+-- SELECT CLASSIFY_TICKET_PRIORITY('ACCESS') as access_tickets;
+-- SELECT CLASSIFY_TICKET_PRIORITY('ANALYTICS') as analytics_tickets;
+-- SELECT CLASSIFY_TICKET_PRIORITY('PUBLISHING') as publishing_tickets;
+-- SELECT CLASSIFY_TICKET_PRIORITY('BILLING') as billing_tickets;
+-- SELECT CLASSIFY_TICKET_PRIORITY('API') as api_tickets;
+
+-- ============================================================================
+-- Quick Verification Test (Uncomment to run all functions at once)
+-- ============================================================================
+-- SELECT '🔄 Testing ML functions...' as status;
+-- SELECT PREDICT_CHURN_RISK(NULL) as churn_risk_result;
+-- SELECT PREDICT_CAMPAIGN_ROI(NULL) as roi_result;
+-- SELECT CLASSIFY_TICKET_PRIORITY(NULL) as priority_result;
+-- SELECT '✅ All ML functions created and tested successfully!' as final_status;
 
 -- ============================================================================
 -- Next Step: Run sql/agent/hootsuite_08_intelligence_agent.sql
