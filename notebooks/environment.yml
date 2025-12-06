@@ -3,9 +3,8 @@ channels:
   - snowflake
 dependencies:
   - python=3.11
-  - snowflake-snowpark-python
-  - snowflake-ml-python
-  - pandas
-  - scikit-learn
+  - pandas=2.2.3
+  - scikit-learn=1.6.1
+  - snowflake-ml-python=1.19.0
   - xgboost
   - joblib
