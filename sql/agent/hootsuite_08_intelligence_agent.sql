@@ -123,7 +123,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
     - tool_spec:
         type: "function"
         name: "ClassifyTicketPriority"
-        description: "Classifies support ticket priority. Returns clean/suspicious/high-risk distribution. Use when users ask about ticket priority classification, urgency assessment, or support triage. Input: category filter or NULL."
+        description: "Classifies support ticket priority. Returns priority distribution. Use when users ask about ticket priority classification, urgency assessment, or support triage. Input: category filter or NULL."
         input_schema:
           type: "object"
           properties:
@@ -164,13 +164,13 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
     # ML Model Procedure Resources
     PredictChurnRisk:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
+      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
 
     PredictCampaignROI:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
+      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CAMPAIGN_ROI"
 
     ClassifyTicketPriority:
-      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
+      procedure: "HOOTSUITE_INTELLIGENCE.ML_MODELS.CLASSIFY_TICKET_PRIORITY"
   $$;
 
 -- ============================================================================
