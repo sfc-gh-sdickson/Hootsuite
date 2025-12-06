@@ -1,4 +1,4 @@
-![Snowflake Logo](../Snowflake_Logo.svg)
+<img src="../Snowflake_Logo.svg" width="200">
 
 # Hootsuite Intelligence Agent - Sample Questions
 
