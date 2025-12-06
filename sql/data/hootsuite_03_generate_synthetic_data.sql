@@ -138,6 +138,12 @@ SELECT 'Campaigns: ' || COUNT(*) || ' rows inserted' AS status FROM CAMPAIGNS;
 -- Table 4: POSTS (100,000 rows)
 -- ============================================================================
 -- Generate posts linked to customers, accounts, and optionally campaigns
+
+-- Create temp campaign lookup for efficient joins
+CREATE TEMPORARY TABLE temp_campaign_lookup AS
+SELECT campaign_id, customer_id, ROW_NUMBER() OVER (ORDER BY RANDOM()) as campaign_rn
+FROM CAMPAIGNS;
+
 INSERT INTO POSTS
 WITH post_gen AS (
     SELECT 
@@ -149,14 +155,14 @@ WITH post_gen AS (
             WHEN 3 THEN 'LINK'
             ELSE 'TEXT'
         END AS media_type,
-        UNIFORM(1, 100, RANDOM()) AS campaign_rand
+        UNIFORM(1, 10000, RANDOM()) AS campaign_rn_assigned
     FROM TABLE(GENERATOR(ROWCOUNT => 100000))
 )
 SELECT
     'PST' || LPAD(p.rn::VARCHAR, 8, '0') AS post_id,
     sa.customer_id,
     sa.account_id,
-    CASE WHEN p.campaign_rand < 40 THEN (SELECT campaign_id FROM CAMPAIGNS c WHERE c.customer_id = sa.customer_id LIMIT 1) ELSE NULL END AS campaign_id,
+    cmp.campaign_id,
     CASE p.media_type
         WHEN 'IMAGE' THEN 'Check out our latest photo! #image #content'
         WHEN 'VIDEO' THEN 'Watch this video to learn more about our features. #video #demo'
@@ -174,7 +180,10 @@ SELECT
     CURRENT_TIMESTAMP() AS last_updated
 FROM post_gen p
 JOIN (SELECT account_id, customer_id, ROW_NUMBER() OVER (ORDER BY RANDOM()) as rn FROM SOCIAL_ACCOUNTS) sa
-ON MOD(p.rn, 15000) + 1 = sa.rn; -- Rough distribution across accounts
+ON MOD(p.rn, 15000) + 1 = sa.rn
+JOIN temp_campaign_lookup cmp ON p.campaign_rn_assigned = cmp.campaign_rn;
+
+DROP TABLE temp_campaign_lookup;
 
 SELECT 'Posts: ' || COUNT(*) || ' rows inserted' AS status FROM POSTS;
 
