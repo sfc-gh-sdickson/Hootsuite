@@ -2,9 +2,9 @@ name: hootsuite_ml_env
 channels:
   - snowflake
 dependencies:
-  - python=3.11
-  - pandas=2.2.3
-  - scikit-learn=1.6.1
-  - snowflake-ml-python=1.19.0
+  - python=3.10
+  - pandas
+  - scikit-learn
+  - snowflake-ml-python
   - xgboost
   - joblib
