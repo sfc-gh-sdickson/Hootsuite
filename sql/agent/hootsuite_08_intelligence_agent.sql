@@ -1,8 +1,9 @@
 -- ============================================================================
--- Hootsuite Intelligence Agent - Agent Setup and Verification
+-- Hootsuite Intelligence Agent - Agent Configuration
 -- ============================================================================
--- Purpose: Verify the capabilities of the Intelligence Agent components
--- Components Verified: Semantic Views, Cortex Search, ML Functions
+-- Purpose: Create Snowflake Intelligence Agent with semantic views and ML tools
+-- Agent: HOOTSUITE_SOCIAL_AGENT
+-- Tools: Semantic views + Cortex Search services + ML model procedures
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
@@ -10,145 +11,149 @@ USE SCHEMA ANALYTICS;
 USE WAREHOUSE HOOTSUITE_WH;
 
 -- ============================================================================
--- 1. Simple Questions (Verification of Semantic View Access)
+-- Create Cortex Agent
 -- ============================================================================
+CREATE OR REPLACE AGENT HOOTSUITE_SOCIAL_AGENT
+  COMMENT = 'Hootsuite social media intelligence agent with ML predictions and semantic search'
+  PROFILE = '{"display_name": "Hootsuite Intelligence Assistant", "avatar": "hootsuite-icon.png", "color": "blue"}'
+  FROM SPECIFICATION
+  $$
+  models:
+    orchestration: auto
 
--- Q1: "How many total posts have been published?"
-SELECT total_posts 
-FROM SV_SOCIAL_PERFORMANCE;
+  orchestration:
+    budget:
+      seconds: 60
+      tokens: 32000
 
--- Q2: "What is the total number of likes across all campaigns?"
-SELECT SUM(total_likes) 
-FROM SV_SOCIAL_PERFORMANCE;
+  instructions:
+    response: "You are a helpful social media intelligence assistant for Hootsuite. Provide clear, accurate answers about posts, engagements, campaigns, and user data. When using ML predictions, clearly explain the predicted metrics (e.g., engagement rate) or risk levels. Always cite data sources."
+    orchestration: "For social media performance questions use SV_SOCIAL_PERFORMANCE. For post content search use POSTS_SEARCH. For strategy document search use STRATEGY_DOCUMENTS_SEARCH. For ML predictions use the appropriate prediction procedure (PredictPostEngagement, PredictChurnRisk, PredictOptimalTime)."
+    system: "You are an expert social media analyst for Hootsuite. You help analyze post performance, engagement metrics, customer churn risk, and optimal posting times. Always provide data-driven insights."
+    sample_questions:
+      - question: "How many total posts have been published?"
+        answer: "I'll query the social performance data to get the count of published posts."
+      - question: "What is the total number of likes across all campaigns?"
+        answer: "I'll calculate the total likes metric from the engagement data."
+      - question: "List the top 5 profiles by follower count."
+        answer: "I'll rank social profiles by follower count and show the top 5."
+      - question: "What is the average engagement rate for video posts?"
+        answer: "I'll calculate the average engagement rate specifically for posts with video media type."
+      - question: "Compare the average engagement rate of Facebook vs Twitter posts for the Retail industry."
+        answer: "I'll aggregate engagement rates by network for the Retail industry to compare them."
+      - question: "Which campaign had the highest total clicks?"
+        answer: "I'll analyze campaign data to identify the one with the maximum total clicks."
+      - question: "What is the monthly trend of post volume for the last year?"
+        answer: "I'll segment post counts by month for the past year to show the trend."
+      - question: "Predict the engagement rate for post PST00001234."
+        answer: "I'll use the post engagement prediction model to forecast the engagement rate for this specific post."
+      - question: "Is organization ORG00000001 at risk of churn?"
+        answer: "I'll use the churn risk prediction model to assess the risk level for this organization."
+      - question: "When is the best time to post on LINKEDIN for the FINANCE industry?"
+        answer: "I'll use the optimal time prediction model to find the best day and hour for this network and industry."
+      - question: "Find posts about 'new product launch'."
+        answer: "I'll search the unstructured post content for mentions of 'new product launch'."
+      - question: "What are the brand guidelines for logo usage?"
+        answer: "I'll search the strategy documents for brand guidelines related to logo usage."
 
--- Q3: "List the top 5 profiles by follower count."
-SELECT profile_name, total_followers 
-FROM SV_SOCIAL_PERFORMANCE 
-ORDER BY total_followers DESC 
-LIMIT 5;
+  tools:
+    # Semantic View for Cortex Analyst (Text-to-SQL)
+    - tool_spec:
+        type: "cortex_analyst_text_to_sql"
+        name: "SocialPerformanceAnalyst"
+        description: "Analyzes social media posts, engagements, campaigns, organizations, and profiles. Use for questions about post counts, likes, shares, comments, clicks, impressions, engagement rates, follower counts, and campaign budgets."
+    
+    # Cortex Search Services
+    - tool_spec:
+        type: "cortex_search"
+        name: "PostsSearch"
+        description: "Searches unstructured social media post content. Use when users ask to find specific posts, search for keywords in posts, or analyze post text sentiment/topics."
+    
+    - tool_spec:
+        type: "cortex_search"
+        name: "StrategyDocumentsSearch"
+        description: "Searches unstructured strategy documents and guidelines. Use when users ask about brand guidelines, content strategies, campaign briefs, or internal documentation."
+    
+    # ML Model Procedures
+    - tool_spec:
+        type: "function"
+        name: "PredictPostEngagement"
+        description: "Predicts the engagement rate for a specific post. Returns the predicted rate. Use when users ask to predict engagement, forecast performance, or score a post. Input: POST_ID."
+        input_schema:
+          type: "object"
+          properties:
+            POST_ID_INPUT:
+              type: "string"
+              description: "The ID of the post to predict (e.g., 'PST00001234')"
+          required: ["POST_ID_INPUT"]
 
--- Q4: "What is the average engagement rate for video posts?"
-SELECT avg_engagement_rate 
-FROM SV_SOCIAL_PERFORMANCE 
-WHERE media_type = 'VIDEO';
+    - tool_spec:
+        type: "function"
+        name: "PredictChurnRisk"
+        description: "Predicts the churn risk for a customer organization. Returns HIGH RISK or LOW RISK. Use when users ask about churn, customer retention risk, or organization health. Input: ORGANIZATION_ID."
+        input_schema:
+          type: "object"
+          properties:
+            ORGANIZATION_ID_INPUT:
+              type: "string"
+              description: "The ID of the organization to analyze (e.g., 'ORG00000001')"
+          required: ["ORGANIZATION_ID_INPUT"]
 
--- Q5: "How many organizations are in the Technology industry?"
-SELECT COUNT(DISTINCT organization_name) 
-FROM SV_SOCIAL_PERFORMANCE 
-WHERE industry = 'Technology';
+    - tool_spec:
+        type: "function"
+        name: "PredictOptimalTime"
+        description: "Predicts the optimal posting times (day of week and hour) for a given network and industry. Returns top 3 times. Use when users ask when to post, best time to post, or scheduling optimization. Input: NETWORK, INDUSTRY."
+        input_schema:
+          type: "object"
+          properties:
+            NETWORK_INPUT:
+              type: "string"
+              description: "Social network (e.g., 'LINKEDIN', 'TWITTER', 'FACEBOOK')"
+            INDUSTRY_INPUT:
+              type: "string"
+              description: "Industry vertical (e.g., 'Finance', 'Retail', 'Technology')"
+          required: ["NETWORK_INPUT", "INDUSTRY_INPUT"]
+
+  tool_resources:
+    # Semantic View Resources
+    SocialPerformanceAnalyst:
+      semantic_view: "HOOTSUITE_INTELLIGENCE.ANALYTICS.SV_SOCIAL_PERFORMANCE"
+
+    # Cortex Search Resources
+    PostsSearch:
+      name: "HOOTSUITE_INTELLIGENCE.RAW.POSTS_SEARCH"
+      max_results: "10"
+      title_column: "post_id"
+      id_column: "post_id"
+
+    StrategyDocumentsSearch:
+      name: "HOOTSUITE_INTELLIGENCE.RAW.STRATEGY_DOCUMENTS_SEARCH"
+      max_results: "5"
+      title_column: "title"
+      id_column: "document_id"
+
+    # ML Model Procedure Resources
+    PredictPostEngagement:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_POST_ENGAGEMENT"
+
+    PredictChurnRisk:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK"
+
+    PredictOptimalTime:
+      function: "HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_OPTIMAL_TIME"
+  $$;
 
 -- ============================================================================
--- 2. Complex Questions (Verification of Relationships & Aggregation)
+-- Grant Permissions
 -- ============================================================================
-
--- Q1: "Compare the average engagement rate of Facebook vs Twitter posts for the Retail industry."
-SELECT network, avg_engagement_rate 
-FROM SV_SOCIAL_PERFORMANCE 
-WHERE industry = 'Retail' AND network IN ('FACEBOOK', 'TWITTER') 
-GROUP BY network;
-
--- Q2: "Which campaign had the highest total clicks?"
-SELECT campaign_name, total_clicks 
-FROM SV_SOCIAL_PERFORMANCE 
-ORDER BY total_clicks DESC 
-LIMIT 1;
-
--- Q3: "What is the monthly trend of post volume for the last year?"
-SELECT DATE_TRUNC('month', published_date) as month, SUM(total_posts)
-FROM SV_SOCIAL_PERFORMANCE
-GROUP BY 1 
-ORDER BY 1;
-
--- Q4: "List organizations with 'ENTERPRISE' plan tier that have less than 100 posts."
-SELECT organization_name
-FROM SV_SOCIAL_PERFORMANCE
-WHERE plan_tier = 'ENTERPRISE'
-GROUP BY organization_name
-HAVING SUM(total_posts) < 100;
-
--- Q5: "Which media type drives the highest average sentiment score?"
-SELECT media_type, avg_sentiment
-FROM SV_SOCIAL_PERFORMANCE
-GROUP BY media_type
-ORDER BY avg_sentiment DESC 
-LIMIT 1;
+GRANT USAGE ON AGENT HOOTSUITE_SOCIAL_AGENT TO ROLE SYSADMIN;
+GRANT USAGE ON AGENT HOOTSUITE_SOCIAL_AGENT TO ROLE PUBLIC;
 
 -- ============================================================================
--- 3. ML Model Questions (Verification of Tool Functions)
+-- Verification
 -- ============================================================================
+SHOW AGENTS IN SCHEMA ANALYTICS;
 
--- Q1: "Predict the engagement rate for post PST00001234."
-CALL HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_POST_ENGAGEMENT('PST00001234');
+DESC AGENT HOOTSUITE_SOCIAL_AGENT;
 
--- Q2: "Is organization ORG00000001 at risk of churn?"
-CALL HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK('ORG00000001');
-
--- Q3: "When is the best time to post on LINKEDIN for the FINANCE industry?"
-CALL HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_OPTIMAL_TIME('LINKEDIN', 'Finance');
-
--- Q4: "Evaluate the churn risk for organization ORG00000005."
-CALL HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_CHURN_RISK('ORG00000005');
-
--- Q5: "What is the expected engagement if I post on TWITTER for the TECHNOLOGY industry at the optimal time?"
--- Agent would first call PREDICT_OPTIMAL_TIME, then parse results.
-CALL HOOTSUITE_INTELLIGENCE.ML_MODELS.PREDICT_OPTIMAL_TIME('TWITTER', 'Technology');
-
--- ============================================================================
--- 4. Cortex Search Questions (Verification of Search Services)
--- ============================================================================
-
--- Q1: "Find posts about 'new product launch'."
-SELECT PARSE_JSON(
-  SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'HOOTSUITE_INTELLIGENCE.RAW.POSTS_SEARCH',
-    '{
-      "query": "new product launch",
-      "columns": ["post_text", "media_type"],
-      "limit": 3
-    }'
-  )
-)['results'] AS search_results;
-
--- Q2: "What are the brand guidelines for logo usage?"
-SELECT PARSE_JSON(
-  SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'HOOTSUITE_INTELLIGENCE.RAW.STRATEGY_DOCUMENTS_SEARCH',
-    '{
-      "query": "logo usage",
-      "columns": ["title", "content"],
-      "filter": {"@eq": {"category": "BRAND_GUIDELINES"}},
-      "limit": 3
-    }'
-  )
-)['results'] AS search_results;
-
--- Q3: "Search for campaign briefs targeting Gen Z."
-SELECT PARSE_JSON(
-  SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'HOOTSUITE_INTELLIGENCE.RAW.STRATEGY_DOCUMENTS_SEARCH',
-    '{
-      "query": "Gen Z target audience",
-      "columns": ["title", "content"],
-      "filter": {"@eq": {"category": "CAMPAIGN_BRIEF"}},
-      "limit": 3
-    }'
-  )
-)['results'] AS search_results;
-
--- Q4: "Find video posts with high positive sentiment."
--- Note: 'sentiment_score' is numeric and usually requires range filtering which Cortex Search 
--- supports if indexed as an attribute. In our setup, we didn't add sentiment_score to attributes 
--- to keep it simple, but we can filter by media_type='VIDEO'.
-SELECT PARSE_JSON(
-  SNOWFLAKE.CORTEX.SEARCH_PREVIEW(
-    'HOOTSUITE_INTELLIGENCE.RAW.POSTS_SEARCH',
-    '{
-      "query": "positive feedback",
-      "columns": ["post_text", "status"],
-      "filter": {"@eq": {"media_type": "VIDEO"}},
-      "limit": 3
-    }'
-  )
-)['results'] AS search_results;
-
-SELECT 'Agent capabilities verification complete.' AS STATUS;
+SELECT 'Hootsuite Intelligence Agent created successfully' AS STATUS;
