@@ -80,12 +80,11 @@ SELECT
     c.customer_id,
     c.plan_type,
     c.industry,
-    c.employee_count,
-    c.annual_revenue_millions,
-    DATEDIFF(month, c.contract_start_date, CURRENT_DATE()) as tenure_months,
-    COUNT(DISTINCT sa.account_id) as social_accounts_count,
-    COUNT(DISTINCT t.ticket_id) as total_tickets_last_90d,
-    AVG(CASE WHEN t.priority = 'URGENT' THEN 1.0 ELSE 0.0 END) as urgent_ticket_rate,
+    c.employee_count::FLOAT as employee_count,
+    c.annual_revenue_millions::FLOAT as annual_revenue_millions,
+    DATEDIFF(month, c.contract_start_date, CURRENT_DATE())::FLOAT as tenure_months,
+    COUNT(DISTINCT sa.account_id)::FLOAT as social_accounts_count,
+    COUNT(DISTINCT t.ticket_id)::FLOAT as total_tickets_last_90d,
     -- Label Generation
     CASE 
         WHEN c.churn_risk_score > 0.7 THEN 2 -- High Risk
@@ -102,10 +101,10 @@ CREATE OR REPLACE VIEW V_CAMPAIGN_ROI_FEATURES AS
 SELECT
     c.campaign_id,
     c.objective,
-    c.budget_allocated,
-    DATEDIFF(day, c.start_date, c.end_date) as duration_days,
-    COUNT(DISTINCT p.post_id) as num_posts,
-    COUNT(DISTINCT CASE WHEN p.media_type = 'VIDEO' THEN p.post_id END) as num_video_posts,
+    c.budget_allocated::FLOAT as budget_allocated,
+    DATEDIFF(day, c.start_date, c.end_date)::FLOAT as duration_days,
+    COUNT(DISTINCT p.post_id)::FLOAT as num_posts,
+    COUNT(DISTINCT CASE WHEN p.media_type = 'VIDEO' THEN p.post_id END)::FLOAT as num_video_posts,
     -- Label Generation
     CASE 
         WHEN (SUM(m.clicks) / NULLIF(c.budget_allocated, 0)) > 0.05 THEN 2 -- High ROI
