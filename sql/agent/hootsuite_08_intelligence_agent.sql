@@ -27,9 +27,9 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
       tokens: 32000
 
   instructions:
-    response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about customers, campaigns, and engagement data. When using ML predictions, explain the risk levels clearly. Always cite data sources."
-    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health and support analysis use CustomerHealthAnalyst. For social media performance, posts, and engagement use SocialPerformanceAnalyst. For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function."
-    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. Always provide data-driven insights based on available data."
+    response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about customers, campaigns, and engagement data. When using ML predictions, explain the risk levels clearly. You can also trigger automated customer engagement workflows for at-risk customers. Always cite data sources."
+    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health and support analysis use CustomerHealthAnalyst. For social media performance, posts, and engagement use SocialPerformanceAnalyst. For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function. To trigger customer engagement workflows (emails, account reviews) use TriggerCustomerEngagement."
+    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. You can also automate customer success workflows including churn prevention emails and account reviews. Always provide data-driven insights based on available data."
     sample_questions:
       - question: "How many active customers do we have?"
         answer: "I'll query CustomerHealthAnalyst to count customers where active_status is ACTIVE."
@@ -55,6 +55,8 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         answer: "I'll use CampaignAnalyst to count campaigns where status is ACTIVE."
       - question: "What is the total follower count across all social accounts?"
         answer: "I'll use SocialPerformanceAnalyst to sum follower_count across all accounts."
+      - question: "Trigger engagement for customer CUST000050 with churn prevention"
+        answer: "I'll use TriggerCustomerEngagement to send personalized outreach and schedule account review for this high-risk customer."
 
   tools:
     # Semantic Views for Cortex Analyst (Text-to-SQL)
@@ -126,6 +128,25 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
               description: "Filter by ticket category or NULL for all"
           required: []
 
+    # Customer Engagement Automation
+    - tool_spec:
+        type: "generic"
+        name: "TriggerCustomerEngagement"
+        description: "Triggers automated customer success workflows including personalized re-engagement emails, account health reviews, and engagement tracking with A/B testing. Use when users ask to engage at-risk customers, trigger churn prevention, schedule account reviews, or run customer engagement campaigns."
+        input_schema:
+          type: "object"
+          properties:
+            customer_id_param:
+              type: "string"
+              description: "Unique customer identifier"
+            engagement_type:
+              type: "string"
+              description: "Type of engagement: CHURN_PREVENTION, UPSELL, or ONBOARDING"
+            ab_test_variant:
+              type: "string"
+              description: "A/B test variant (A or B), defaults to A"
+          required: ["customer_id_param", "engagement_type"]
+
   tool_resources:
     # Semantic View Resources
     CampaignAnalyst:
@@ -180,6 +201,15 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         type: "warehouse"
         warehouse: "HOOTSUITE_WH"
         query_timeout: 60
+
+    # Customer Engagement Automation Procedure
+    TriggerCustomerEngagement:
+      type: "procedure"
+      identifier: "HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "HOOTSUITE_WH"
+        query_timeout: 120
   $$;
 
 -- ============================================================================
