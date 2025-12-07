@@ -202,7 +202,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         warehouse: "HOOTSUITE_WH"
         query_timeout: 60
 
-    # Customer Engagement Automation Procedure
+    # Customer Engagement Automation Function
     TriggerCustomerEngagement:
       type: "function"
       identifier: "HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT"
