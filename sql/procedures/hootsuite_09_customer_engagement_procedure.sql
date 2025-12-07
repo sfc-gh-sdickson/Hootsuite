@@ -25,9 +25,9 @@ CREATE TABLE IF NOT EXISTS CUSTOMER_ENGAGEMENT_RESULTS (
 ) COMMENT = 'Tracks customer engagement automation results and A/B testing';
 
 -- ============================================================================
--- Customer Engagement Automation Function (converted from procedure for agent compatibility)
+-- Customer Engagement Automation Procedure
 -- ============================================================================
-CREATE OR REPLACE FUNCTION TRIGGER_CUSTOMER_ENGAGEMENT(
+CREATE OR REPLACE PROCEDURE TRIGGER_CUSTOMER_ENGAGEMENT(
     CUSTOMER_ID STRING,
     ENGAGEMENT_TYPE STRING,
     AB_TEST_VARIANT STRING
@@ -168,14 +168,14 @@ $$;
 -- ============================================================================
 -- Grant Permissions
 -- ============================================================================
-GRANT USAGE ON FUNCTION HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT(STRING, STRING, STRING) TO ROLE SYSADMIN;
-GRANT USAGE ON FUNCTION HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT(STRING, STRING, STRING) TO ROLE PUBLIC;
+GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT(STRING, STRING, STRING) TO ROLE SYSADMIN;
+GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT(STRING, STRING, STRING) TO ROLE PUBLIC;
 
 -- ============================================================================
--- Test Function (Commented out)
+-- Test Procedure (Commented out)
 -- ============================================================================
 -- SELECT customer_id FROM HOOTSUITE_INTELLIGENCE.RAW.CUSTOMERS WHERE churn_risk_score > 0.7 LIMIT 1;
--- SELECT TRIGGER_CUSTOMER_ENGAGEMENT('CUST000001', 'CHURN_PREVENTION', 'A');
+-- CALL TRIGGER_CUSTOMER_ENGAGEMENT('CUST000001', 'CHURN_PREVENTION', 'A');
 
-SELECT 'Customer Engagement Function created successfully' AS STATUS;
+SELECT 'Customer Engagement Procedure created successfully' AS STATUS;
 
