@@ -55,8 +55,8 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         answer: "I'll use CampaignAnalyst to count campaigns where status is ACTIVE."
       - question: "What is the total follower count across all social accounts?"
         answer: "I'll use SocialPerformanceAnalyst to sum follower_count across all accounts."
-      - question: "Trigger engagement for customer CUST000050 with churn prevention"
-        answer: "I'll use TriggerCustomerEngagement to send personalized outreach and schedule account review for this high-risk customer."
+      - question: "Trigger engagement for customer CUST000289 with churn prevention using variant A"
+        answer: "I'll use TriggerCustomerEngagement to send personalized outreach and schedule account review for this high-risk customer using A/B test variant A."
 
   tools:
     # Semantic Views for Cortex Analyst (Text-to-SQL)
