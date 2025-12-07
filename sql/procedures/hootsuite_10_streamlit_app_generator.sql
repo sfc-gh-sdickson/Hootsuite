@@ -1,8 +1,9 @@
 -- ============================================================================
 -- Hootsuite Streamlit App Generator Procedure
 -- ============================================================================
--- Purpose: Automatically generate and deploy Streamlit apps in Snowflake
--- Returns: Direct link to launch the created app
+-- Purpose: Generate complete Streamlit app code from chart queries
+-- Returns: Full app code + deployment instructions
+-- Note: Snowflake requires manual Streamlit app creation via UI
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
@@ -23,117 +24,190 @@ AS
 $$
 DECLARE
     app_name VARCHAR;
-    streamlit_code VARCHAR;
-    result VARCHAR;
+    streamlit_code TEXT;
+    result TEXT;
 BEGIN
     -- Clean app name for Snowflake object naming
     app_name := REGEXP_REPLACE(LOWER(:CHART_TITLE), '[^a-z0-9_]', '_');
     app_name := 'HOOTSUITE_' || SUBSTR(app_name, 1, 40);
     
-    -- Generate Streamlit app code
+    -- Escape SQL for embedding
+    LET sql_escaped TEXT := REPLACE(:CHART_SQL, '''', '''''');
+    
+    -- Generate complete Streamlit app code
     streamlit_code := 'import streamlit as st
 import pandas as pd
 import plotly.express as px
 from snowflake.snowpark.context import get_active_session
 
+# Page setup
 st.set_page_config(page_title="' || :CHART_TITLE || '", layout="wide")
 session = get_active_session()
 
+# Header
 st.title("📊 ' || :CHART_TITLE || '")
+st.markdown("*Interactive analysis powered by Snowflake*")
 st.markdown("---")
 
+# Load data with caching
 @st.cache_data
 def load_data():
-    return session.sql("""' || REPLACE(:CHART_SQL, '"', '""') || '""").to_pandas()
+    query = """' || sql_escaped || '"""
+    return session.sql(query).to_pandas()
 
-df = load_data()
-
-if df.empty:
-    st.warning("No data returned")
+try:
+    df = load_data()
+    if df.empty:
+        st.warning("⚠️ No data returned from query")
+        st.stop()
+except Exception as e:
+    st.error(f"Error: {e}")
     st.stop()
 
-st.subheader("Data Table")
-st.dataframe(df, use_container_width=True)
-st.caption(f"Total Records: {len(df):,}")
-
+# Identify column types
 numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
-categorical_cols = df.select_dtypes(include=["object"]).columns.tolist()
+categorical_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
 
-if numeric_cols and categorical_cols:
-    st.subheader("Visualizations")
+# Display data table
+st.subheader("📋 Data Table")
+st.dataframe(df, use_container_width=True, height=400)
+st.caption(f"Total Records: {len(df):,} | Columns: {len(df.columns)}")
+
+# Visualizations
+if numeric_cols:
+    st.subheader("📈 Visualizations")
+    
+    if categorical_cols:
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.markdown("**Bar Chart**")
+            fig_bar = px.bar(df, x=categorical_cols[0], y=numeric_cols[0], 
+                           title=f"{numeric_cols[0]} by {categorical_cols[0]}")
+            st.plotly_chart(fig_bar, use_container_width=True)
+        
+        with col2:
+            if len(numeric_cols) >= 2:
+                st.markdown("**Scatter Plot**")
+                fig_scatter = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1],
+                                       title=f"{numeric_cols[1]} vs {numeric_cols[0]}")
+                st.plotly_chart(fig_scatter, use_container_width=True)
+            else:
+                st.markdown("**Distribution**")
+                fig_hist = px.histogram(df, x=numeric_cols[0], 
+                                      title=f"Distribution of {numeric_cols[0]}")
+                st.plotly_chart(fig_hist, use_container_width=True)
+    else:
+        # No categorical columns - show histograms
+        for col in numeric_cols[:3]:
+            fig = px.histogram(df, x=col, title=f"Distribution of {col}")
+            st.plotly_chart(fig, use_container_width=True)
+
+# Statistical analysis
+if "' || :ANALYSIS_TYPE || '" == "statistical" and len(numeric_cols) > 0:
+    st.subheader("📊 Statistical Analysis")
+    
     col1, col2 = st.columns(2)
     
     with col1:
-        fig_bar = px.bar(df, x=categorical_cols[0], y=numeric_cols[0])
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.markdown("**Descriptive Statistics**")
+        st.dataframe(df[numeric_cols].describe(), use_container_width=True)
     
     with col2:
         if len(numeric_cols) > 1:
-            fig_scatter = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1])
-            st.plotly_chart(fig_scatter, use_container_width=True)
+            st.markdown("**Correlation Matrix**")
+            corr = df[numeric_cols].corr()
+            fig = px.imshow(corr, text_auto=True, 
+                          color_continuous_scale="RdBu_r",
+                          title="Feature Correlations")
+            st.plotly_chart(fig, use_container_width=True)
 
-if numeric_cols and "' || :ANALYSIS_TYPE || '" = "statistical":
-    st.subheader("Statistical Analysis")
-    st.write(df[numeric_cols].describe())
-    
-    if len(numeric_cols) > 1:
-        corr = df[numeric_cols].corr()
-        fig = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu_r")
-        st.plotly_chart(fig, use_container_width=True)
+# Key metrics
+if numeric_cols:
+    st.subheader("🎯 Key Metrics")
+    cols = st.columns(min(4, len(numeric_cols)))
+    for idx, col in enumerate(numeric_cols[:4]):
+        with cols[idx]:
+            st.metric(label=col, 
+                     value=f"{df[col].sum():,.0f}",
+                     delta=f"Avg: {df[col].mean():,.2f}")
 
-st.subheader("Export")
-csv = df.to_csv(index=False)
-st.download_button("Download CSV", csv, "data.csv", "text/csv")
+# Export functionality
+st.subheader("💾 Export Data")
+col1, col2 = st.columns(2)
 
-st.caption("Generated by Hootsuite Intelligence Agent")
+with col1:
+    csv = df.to_csv(index=False)
+    st.download_button(
+        label="📥 Download CSV",
+        data=csv,
+        file_name="' || app_name || '.csv",
+        mime="text/csv",
+        use_container_width=True
+    )
+
+with col2:
+    json_data = df.to_json(orient="records", indent=2)
+    st.download_button(
+        label="📥 Download JSON",
+        data=json_data,
+        file_name="' || app_name || '.json",
+        mime="application/json",
+        use_container_width=True
+    )
+
+# Footer
+st.markdown("---")
+st.caption("🤖 Auto-generated by Hootsuite Intelligence Agent | Powered by Snowflake Cortex")
 ';
 
-    -- Create the Streamlit app
-    EXECUTE IMMEDIATE 'CREATE OR REPLACE STREAMLIT HOOTSUITE_INTELLIGENCE.ANALYTICS.' || app_name || '
-    FROM (SELECT ''' || streamlit_code || ''' AS code)
-    MAIN_FILE = ''streamlit_app.py''
-    QUERY_WAREHOUSE = ''HOOTSUITE_WH''';
-    
-    -- Get account and region for URL
-    LET account_name VARCHAR := (SELECT CURRENT_ACCOUNT());
-    LET region_name VARCHAR := (SELECT CURRENT_REGION());
-    
-    -- Construct Snowsight URL
-    result := '✅ Streamlit app deployed successfully!
+    -- Build the response with instructions
+    result := '✅ STREAMLIT APP CODE GENERATED
 
-**App:** ' || app_name || '
-**Database:** HOOTSUITE_INTELLIGENCE.ANALYTICS
+**App Name:** ' || app_name || '
+**Analysis Type:** ' || :ANALYSIS_TYPE || '
 
-**🔗 CLICK TO OPEN YOUR APP:**
-https://app.snowflake.com/' || region_name || '/' || account_name || '/#/streamlit-apps/HOOTSUITE_INTELLIGENCE.ANALYTICS.' || app_name || '
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 DEPLOYMENT INSTRUCTIONS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Or navigate manually:**
-Snowsight → Projects → Streamlit → ' || app_name || '
+**Step 1:** Go to Snowsight → Projects → Streamlit
 
-**Features:**
-✓ Interactive data table
-✓ Dynamic visualizations
-' || (CASE WHEN :ANALYSIS_TYPE = 'statistical' THEN '✓ Statistical analysis with correlations' ELSE '✓ Exploratory analysis' END) || '
-✓ Data export (CSV)
+**Step 2:** Click "+ Streamlit App"
+
+**Step 3:** Configure:
+   - Name: ' || app_name || '
+   - Location: HOOTSUITE_INTELLIGENCE.ANALYTICS
+   - Warehouse: HOOTSUITE_WH
+
+**Step 4:** Copy the code below into the app editor
+
+**Step 5:** Click "Run" to launch your app
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 STREAMLIT APP CODE (Copy everything below)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+' || streamlit_code || '
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✨ APP FEATURES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Interactive data table (' || LENGTH(:CHART_SQL) || ' char query)
+✓ Dynamic visualizations (bar, scatter, histogram)
+' || (CASE WHEN :ANALYSIS_TYPE = 'statistical' THEN '✓ Statistical analysis (correlations, descriptive stats)' ELSE '✓ Exploratory data analysis' END) || '
+✓ Key metrics dashboard
+✓ Data export (CSV, JSON)
 ✓ Real-time Snowflake connection
 
-**The app is live and ready to use!**';
+**Your app is ready to deploy!** Follow the instructions above.';
 
     RETURN result;
 
 EXCEPTION
     WHEN OTHER THEN
-        result := '⚠️ Error creating Streamlit app: ' || :SQLCODE || ' - ' || :SQLERRM || '
-
-**Troubleshooting:**
-1. Verify you have CREATE STREAMLIT privilege on schema ANALYTICS
-2. Check if app name ' || app_name || ' already exists
-3. Verify warehouse HOOTSUITE_WH is available
-
-**Manual deployment option:**
-Run this SQL to see the generated code:
-SELECT ''' || streamlit_code || '''';
-        RETURN result;
+        RETURN '❌ Error generating app: ' || :SQLCODE || ' - ' || :SQLERRM;
 END;
 $$;
 
@@ -142,8 +216,6 @@ $$;
 -- ============================================================================
 GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART(TEXT, TEXT, TEXT) TO ROLE SYSADMIN;
 GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART(TEXT, TEXT, TEXT) TO ROLE PUBLIC;
-GRANT CREATE STREAMLIT ON SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS TO ROLE SYSADMIN;
-GRANT CREATE STREAMLIT ON SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS TO ROLE PUBLIC;
 
 -- ============================================================================
 -- Test Procedure (Commented out)
