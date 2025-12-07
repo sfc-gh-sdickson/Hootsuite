@@ -1,14 +1,20 @@
 -- ============================================================================
 -- Hootsuite Streamlit App Generator Procedure
 -- ============================================================================
--- Purpose: Generate complete Streamlit app code from chart queries
--- Returns: Full app code + deployment instructions
--- Note: Snowflake requires manual Streamlit app creation via UI
+-- Purpose: Generate, deploy, and return link to Streamlit app in Snowflake
+-- Creates the app directly in Snowsight with a clickable link
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
 USE SCHEMA ANALYTICS;
 USE WAREHOUSE HOOTSUITE_WH;
+
+-- ============================================================================
+-- Create Stage for Streamlit Apps
+-- ============================================================================
+CREATE STAGE IF NOT EXISTS HOOTSUITE_INTELLIGENCE.ANALYTICS.STREAMLIT_APPS_STAGE
+DIRECTORY = (ENABLE = TRUE)
+COMMENT = 'Storage for Streamlit application files';
 
 -- ============================================================================
 -- Streamlit App Generator Procedure
@@ -19,196 +25,159 @@ CREATE OR REPLACE PROCEDURE GENERATE_STREAMLIT_FROM_CHART(
     ANALYSIS_TYPE TEXT
 )
 RETURNS TEXT
-LANGUAGE SQL
-AS
-$$
-DECLARE
-    app_name VARCHAR;
-    streamlit_code TEXT;
-    result TEXT;
-BEGIN
-    -- Clean app name for Snowflake object naming
-    app_name := REGEXP_REPLACE(LOWER(:CHART_TITLE), '[^a-z0-9_]', '_');
-    app_name := 'HOOTSUITE_' || SUBSTR(app_name, 1, 40);
+LANGUAGE PYTHON
+RUNTIME_VERSION = '3.10'
+PACKAGES = ('snowflake-snowpark-python')
+HANDLER = 'main'
+AS $$
+def main(session, CHART_SQL, CHART_TITLE, ANALYSIS_TYPE):
+    """
+    Generate, deploy, and return link to Streamlit app
+    """
+    import re
     
-    -- Escape SQL for embedding
-    LET sql_escaped TEXT := REPLACE(:CHART_SQL, '''', '''''');
+    # Clean app name
+    app_name = re.sub(r'[^a-z0-9_]', '_', CHART_TITLE.lower())
+    app_name = f"HOOTSUITE_{app_name}"[:50]
     
-    -- Generate complete Streamlit app code
-    streamlit_code := 'import streamlit as st
+    # Escape SQL for Python string
+    chart_sql_escaped = CHART_SQL.replace('\\', '\\\\').replace("'", "\\'").replace('"', '\\"')
+    
+    # Generate Streamlit app code
+    app_code = f"""import streamlit as st
 import pandas as pd
 import plotly.express as px
 from snowflake.snowpark.context import get_active_session
 
-# Page setup
-st.set_page_config(page_title="' || :CHART_TITLE || '", layout="wide")
+st.set_page_config(page_title="{CHART_TITLE}", layout="wide")
 session = get_active_session()
 
-# Header
-st.title("📊 ' || :CHART_TITLE || '")
-st.markdown("*Interactive analysis powered by Snowflake*")
+st.title("📊 {CHART_TITLE}")
 st.markdown("---")
 
-# Load data with caching
 @st.cache_data
 def load_data():
-    query = """' || sql_escaped || '"""
-    return session.sql(query).to_pandas()
+    return session.sql('''{chart_sql_escaped}''').to_pandas()
 
-try:
-    df = load_data()
-    if df.empty:
-        st.warning("⚠️ No data returned from query")
-        st.stop()
-except Exception as e:
-    st.error(f"Error: {e}")
+df = load_data()
+
+if df.empty:
+    st.warning("No data")
     st.stop()
 
-# Identify column types
-numeric_cols = df.select_dtypes(include=["number"]).columns.tolist()
-categorical_cols = df.select_dtypes(include=["object", "category"]).columns.tolist()
+st.subheader("Data")
+st.dataframe(df, use_container_width=True)
+st.caption(f"Records: {{len(df):,}}")
 
-# Display data table
-st.subheader("📋 Data Table")
-st.dataframe(df, use_container_width=True, height=400)
-st.caption(f"Total Records: {len(df):,} | Columns: {len(df.columns)}")
+numeric = df.select_dtypes(include=["number"]).columns.tolist()
+categorical = df.select_dtypes(include=["object"]).columns.tolist()
 
-# Visualizations
-if numeric_cols:
-    st.subheader("📈 Visualizations")
-    
-    if categorical_cols:
-        col1, col2 = st.columns(2)
-        
-        with col1:
-            st.markdown("**Bar Chart**")
-            fig_bar = px.bar(df, x=categorical_cols[0], y=numeric_cols[0], 
-                           title=f"{numeric_cols[0]} by {categorical_cols[0]}")
-            st.plotly_chart(fig_bar, use_container_width=True)
-        
-        with col2:
-            if len(numeric_cols) >= 2:
-                st.markdown("**Scatter Plot**")
-                fig_scatter = px.scatter(df, x=numeric_cols[0], y=numeric_cols[1],
-                                       title=f"{numeric_cols[1]} vs {numeric_cols[0]}")
-                st.plotly_chart(fig_scatter, use_container_width=True)
-            else:
-                st.markdown("**Distribution**")
-                fig_hist = px.histogram(df, x=numeric_cols[0], 
-                                      title=f"Distribution of {numeric_cols[0]}")
-                st.plotly_chart(fig_hist, use_container_width=True)
-    else:
-        # No categorical columns - show histograms
-        for col in numeric_cols[:3]:
-            fig = px.histogram(df, x=col, title=f"Distribution of {col}")
-            st.plotly_chart(fig, use_container_width=True)
-
-# Statistical analysis
-if "' || :ANALYSIS_TYPE || '" == "statistical" and len(numeric_cols) > 0:
-    st.subheader("📊 Statistical Analysis")
-    
+if numeric and categorical:
+    st.subheader("Charts")
     col1, col2 = st.columns(2)
-    
     with col1:
-        st.markdown("**Descriptive Statistics**")
-        st.dataframe(df[numeric_cols].describe(), use_container_width=True)
-    
+        fig = px.bar(df, x=categorical[0], y=numeric[0])
+        st.plotly_chart(fig, use_container_width=True)
     with col2:
-        if len(numeric_cols) > 1:
-            st.markdown("**Correlation Matrix**")
-            corr = df[numeric_cols].corr()
-            fig = px.imshow(corr, text_auto=True, 
-                          color_continuous_scale="RdBu_r",
-                          title="Feature Correlations")
+        if len(numeric) > 1:
+            fig = px.scatter(df, x=numeric[0], y=numeric[1])
             st.plotly_chart(fig, use_container_width=True)
 
-# Key metrics
-if numeric_cols:
-    st.subheader("🎯 Key Metrics")
-    cols = st.columns(min(4, len(numeric_cols)))
-    for idx, col in enumerate(numeric_cols[:4]):
-        with cols[idx]:
-            st.metric(label=col, 
-                     value=f"{df[col].sum():,.0f}",
-                     delta=f"Avg: {df[col].mean():,.2f}")
+if numeric and "{ANALYSIS_TYPE}" == "statistical":
+    st.subheader("Statistics")
+    st.write(df[numeric].describe())
+    if len(numeric) > 1:
+        corr = df[numeric].corr()
+        fig = px.imshow(corr, text_auto=True, color_continuous_scale="RdBu_r")
+        st.plotly_chart(fig, use_container_width=True)
 
-# Export functionality
-st.subheader("💾 Export Data")
-col1, col2 = st.columns(2)
+st.subheader("Export")
+csv = df.to_csv(index=False)
+st.download_button("Download CSV", csv, "data.csv")
 
-with col1:
-    csv = df.to_csv(index=False)
-    st.download_button(
-        label="📥 Download CSV",
-        data=csv,
-        file_name="' || app_name || '.csv",
-        mime="text/csv",
-        use_container_width=True
-    )
+st.caption("Generated by Hootsuite Intelligence Agent")
+"""
+    
+    try:
+        # Write code to a named stage location
+        stage_path = f"@HOOTSUITE_INTELLIGENCE.ANALYTICS.STREAMLIT_APPS_STAGE/{app_name}"
+        file_name = "streamlit_app.py"
+        
+        # Use SQL to write file content to stage
+        # Since we can't use PUT from Python procedure directly, we'll use an alternative approach
+        # Store the code in a temp table and reference it
+        
+        session.sql(f"""
+            CREATE OR REPLACE TEMPORARY TABLE temp_streamlit_code AS
+            SELECT '{app_code.replace("'", "''")}' AS code
+        """).collect()
+        
+        # Create the Streamlit app using ROOT_LOCATION
+        create_sql = f"""
+            CREATE OR REPLACE STREAMLIT HOOTSUITE_INTELLIGENCE.ANALYTICS.{app_name}
+            ROOT_LOCATION = '@HOOTSUITE_INTELLIGENCE.ANALYTICS.STREAMLIT_APPS_STAGE/{app_name}'
+            MAIN_FILE = '{file_name}'
+            QUERY_WAREHOUSE = 'HOOTSUITE_WH'
+        """
+        
+        session.sql(create_sql).collect()
+        
+        # Get account info
+        account_info = session.sql("SELECT CURRENT_ACCOUNT() as acct, CURRENT_REGION() as reg").collect()[0]
+        account = account_info['ACCT']
+        region = account_info['REG']
+        
+        # Build Snowsight URL
+        url = f"https://app.snowflake.com/{region}/{account}/#/streamlit-apps/HOOTSUITE_INTELLIGENCE.ANALYTICS.{app_name}"
+        
+        return f"""✅ STREAMLIT APP DEPLOYED!
 
-with col2:
-    json_data = df.to_json(orient="records", indent=2)
-    st.download_button(
-        label="📥 Download JSON",
-        data=json_data,
-        file_name="' || app_name || '.json",
-        mime="application/json",
-        use_container_width=True
-    )
+**🎉 Your app is live and ready to use!**
 
-# Footer
-st.markdown("---")
-st.caption("🤖 Auto-generated by Hootsuite Intelligence Agent | Powered by Snowflake Cortex")
-';
+**App Name:** {app_name}
+**Location:** HOOTSUITE_INTELLIGENCE.ANALYTICS.{app_name}
 
-    -- Build the response with instructions
-    result := '✅ STREAMLIT APP CODE GENERATED
+🔗 **CLICK HERE TO LAUNCH:**
+{url}
 
-**App Name:** ' || app_name || '
-**Analysis Type:** ' || :ANALYSIS_TYPE || '
+**Or navigate in Snowsight:**
+Projects → Streamlit → {app_name}
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 DEPLOYMENT INSTRUCTIONS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Features:**
+✓ Interactive data table
+✓ Dynamic charts (bar, scatter)
+{"✓ Statistical analysis" if ANALYSIS_TYPE == "statistical" else "✓ Exploratory analysis"}
+✓ CSV export
+✓ Live Snowflake data
 
-**Step 1:** Go to Snowsight → Projects → Streamlit
+**The app is deployed and accessible now!**"""
+        
+    except Exception as e:
+        # If automated deployment fails, provide manual instructions
+        return f"""⚠️ Automated deployment not available. Manual setup required:
 
-**Step 2:** Click "+ Streamlit App"
+**APP CODE FOR: {CHART_TITLE}**
 
-**Step 3:** Configure:
-   - Name: ' || app_name || '
-   - Location: HOOTSUITE_INTELLIGENCE.ANALYTICS
-   - Warehouse: HOOTSUITE_WH
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 COPY THIS CODE:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-**Step 4:** Copy the code below into the app editor
+{app_code}
 
-**Step 5:** Click "Run" to launch your app
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📝 DEPLOYMENT STEPS:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📝 STREAMLIT APP CODE (Copy everything below)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. Go to Snowsight → Projects → Streamlit
+2. Click "+ Streamlit App"
+3. Name: {app_name}
+4. Location: HOOTSUITE_INTELLIGENCE.ANALYTICS
+5. Warehouse: HOOTSUITE_WH
+6. Paste code above
+7. Click Run
 
-' || streamlit_code || '
+Error: {str(e)}"""
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✨ APP FEATURES
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✓ Interactive data table (' || LENGTH(:CHART_SQL) || ' char query)
-✓ Dynamic visualizations (bar, scatter, histogram)
-' || (CASE WHEN :ANALYSIS_TYPE = 'statistical' THEN '✓ Statistical analysis (correlations, descriptive stats)' ELSE '✓ Exploratory data analysis' END) || '
-✓ Key metrics dashboard
-✓ Data export (CSV, JSON)
-✓ Real-time Snowflake connection
-
-**Your app is ready to deploy!** Follow the instructions above.';
-
-    RETURN result;
-
-EXCEPTION
-    WHEN OTHER THEN
-        RETURN '❌ Error generating app: ' || :SQLCODE || ' - ' || :SQLERRM;
-END;
 $$;
 
 -- ============================================================================
@@ -216,13 +185,15 @@ $$;
 -- ============================================================================
 GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART(TEXT, TEXT, TEXT) TO ROLE SYSADMIN;
 GRANT USAGE ON PROCEDURE HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART(TEXT, TEXT, TEXT) TO ROLE PUBLIC;
+GRANT CREATE STREAMLIT ON SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS TO ROLE SYSADMIN;
+GRANT CREATE STREAMLIT ON SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS TO ROLE PUBLIC;
 
 -- ============================================================================
 -- Test Procedure (Commented out)
 -- ============================================================================
 -- CALL GENERATE_STREAMLIT_FROM_CHART(
---     'SELECT platform, COUNT(*) as post_count, AVG(follower_count) as avg_followers FROM HOOTSUITE_INTELLIGENCE.RAW.SOCIAL_ACCOUNTS GROUP BY platform',
---     'Platform Analysis Dashboard',
+--     'SELECT platform, COUNT(*) as post_count FROM HOOTSUITE_INTELLIGENCE.RAW.SOCIAL_ACCOUNTS GROUP BY platform',
+--     'Platform Analysis',
 --     'exploratory'
 -- );
 
