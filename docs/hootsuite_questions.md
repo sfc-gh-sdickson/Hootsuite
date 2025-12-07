@@ -2,7 +2,7 @@
 
 # Hootsuite Intelligence Agent - Sample Questions
 
-This document contains 15 sample questions that can be answered by the Hootsuite Intelligence Agent, organized by complexity and capability.
+This document contains sample questions that can be answered by the Hootsuite Intelligence Agent, organized by complexity and capability.
 
 ## 1. Simple Questions (Data Lookup & Aggregation)
 *Target: Semantic Views (Cortex Analyst)*
@@ -60,4 +60,27 @@ This document contains 15 sample questions that can be answered by the Hootsuite
 5.  **"Search for help articles about setting up 'Instagram Business' accounts."**
     *   *Tool*: `KnowledgeBaseSearch` (Cortex Search)
     *   *Intent*: Knowledge retrieval.
+
+## 4. Automated Actions & Workflows
+*Target: Customer Engagement Automation Procedure*
+
+1.  **"Trigger engagement for customer CUST000289 with churn prevention using variant A"**
+    *   *Tool*: `TriggerCustomerEngagement` (Python Stored Procedure)
+    *   *Intent*: Execute automated customer success workflow
+    *   *Actions Taken*:
+        - Analyzes customer risk score and account health
+        - Sends personalized re-engagement email (high-touch or automated based on variant)
+        - Schedules priority account review for high-risk customers
+        - Logs actions for A/B testing analysis
+    *   *Returns*: JSON summary with customer details, actions performed, and variant used
+
+2.  **"Trigger upsell engagement for customer CUST000125 using variant B"**
+    *   *Tool*: `TriggerCustomerEngagement`
+    *   *Intent*: Execute upsell campaign with automated strategy
+    *   *Engagement Type*: UPSELL (instead of CHURN_PREVENTION)
+    *   *A/B Variant*: B (automated tips and self-service resources)
+
+3.  **"Which customers have the highest churn risk?"**
+    *   *Follow-up*: Use this to identify at-risk customers, then trigger engagement workflows
+    *   *Workflow*: Analytics → Identify Risk → Trigger Automation
 

@@ -112,16 +112,42 @@ Expose the trained models as SQL functions for the Agent to call.
 
 ---
 
-### Phase 4: Orchestration (The Agent)
+### Phase 4: Customer Success Automation (New Feature)
 
-#### Step 9: Configure Intelligence Agent
-Assemble all tools into the final conversational agent.
+#### Step 9: Deploy Customer Engagement Automation
+Create automated workflows for customer success team with A/B testing capabilities.
+*   **Script**: `sql/procedures/hootsuite_09_customer_engagement_procedure.sql`
+*   **Action**: Run all queries.
+*   **What it does**: 
+    *   Creates a tracking table for engagement results
+    *   Deploys a Python stored procedure that triggers automated email campaigns
+    *   Schedules account reviews for high-risk customers
+    *   Supports A/B testing with different engagement strategies
+*   **Verification**:
+    ```sql
+    -- Test the procedure directly
+    CALL HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT('CUST000001', 'CHURN_PREVENTION', 'A');
+    -- Should return JSON with engagement actions taken
+    
+    -- Verify tracking table exists
+    SELECT * FROM HOOTSUITE_INTELLIGENCE.ANALYTICS.CUSTOMER_ENGAGEMENT_RESULTS LIMIT 5;
+    ```
+
+---
+
+### Phase 5: Orchestration (The Agent)
+
+#### Step 10: Configure Intelligence Agent
+Assemble all tools (including automation) into the final conversational agent.
 *   **Script**: `sql/agent/hootsuite_08_intelligence_agent.sql`
 *   **Action**: Run all queries.
 *   **Verification**:
     ```sql
     SHOW AGENTS IN SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS;
     -- Should list HOOTSUITE_INTELLIGENCE_AGENT
+    
+    DESC AGENT HOOTSUITE_INTELLIGENCE_AGENT;
+    -- Should show 10 tools including TriggerCustomerEngagement
     ```
 
 ---
@@ -130,18 +156,58 @@ Assemble all tools into the final conversational agent.
 
 Once deployed, use **Cortex Copilot** or the **Snowsight AI Interface** to test the agent.
 
-Refer to `docs/hootsuite_questions.md` for a curated list of 15 questions to validate all capabilities, including:
+Refer to `docs/hootsuite_questions.md` for a curated list of questions to validate all capabilities, including:
 *   Data Aggregation (Semantic Views)
 *   Predictive Inference (ML Models)
 *   Document Search (Cortex Search)
+*   Automated Actions (Customer Engagement)
 
-**Example Test Query:**
+**Example Test Queries:**
+
+*Analytics:*
 > "Predict the churn risk for Enterprise customers in the Retail industry and find any recent support tickets related to billing issues."
+
+*Automation:*
+> "Trigger engagement for customer CUST000289 with churn prevention using variant A"
+
+This will:
+- Analyze customer risk (churn score 1.0 = high risk)
+- Queue personalized email (high_touch_personalized template)
+- Schedule priority account review
+- Log all actions to CUSTOMER_ENGAGEMENT_RESULTS table
 
 ---
 
 ## 🆘 Troubleshooting
 
-*   **Data Generation Errors**: If `POSTS` generation fails, ensure you are using the latest version of script `03` which uses a temp table for random distribution.
-*   **ML Model Not Found**: Ensure you ran the Notebook **before** running script `07`.
+### Common Issues
+
+*   **Data Generation Errors**: If `POSTS` generation fails, ensure you are using the latest version of script `03` which includes TRUNCATE statements and uses temp tables for random distribution.
+
+*   **ML Model Not Found**: Ensure you ran the Notebook **before** running script `07`. If you regenerate data (File 3), you MUST retrain all models by re-running the entire notebook.
+
+*   **ML Type Mismatch Errors**: If you see "Numeric value 'X' is not recognized" or "Invalid argument types", this means:
+    - Models were trained on old data with different values
+    - Solution: Re-run the entire notebook to retrain models on current data
+
 *   **Agent "Tool Not Found"**: Verify that the Semantic Views and Search Services exist and the Agent has `USAGE` permissions on them (handled in the scripts, but double-check roles).
+
+*   **Automation Procedure Errors**: 
+    - Ensure File 9 (`hootsuite_09_customer_engagement_procedure.sql`) was run successfully
+    - Verify procedure exists: `SHOW PROCEDURES LIKE 'TRIGGER_CUSTOMER_ENGAGEMENT'`
+    - Test directly before testing through agent: `CALL TRIGGER_CUSTOMER_ENGAGEMENT('CUST000001', 'CHURN_PREVENTION', 'A')`
+    - Customer ID must exist in the data - use valid customer IDs from: `SELECT customer_id FROM RAW.CUSTOMERS LIMIT 10`
+
+### Execution Order Issues
+
+**If you make any changes to data or views, follow this order:**
+
+1. File 3 (Data) → Regenerate data
+2. File 4 (Views) → Recreate feature views
+3. Notebook (All cells) → Retrain ALL ML models
+4. File 7 (ML Functions) → Recreate functions
+5. File 5 (Semantic Views) → Recreate semantic layer
+6. File 9 (Automation) → Recreate procedure
+7. File 10 (Agent) → Recreate agent
+
+**Skipping steps will cause type mismatches and "function not found" errors.**

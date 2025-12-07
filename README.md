@@ -21,7 +21,8 @@ The solution leverages the full power of the Snowflake AI Data Cloud, integratin
 | **Descriptive Analytics** | **Cortex Analyst** | Natural language queries over 3 Semantic Views (Campaigns, Customer Health, Social Performance). |
 | **Semantic Search** | **Cortex Search** | Vector search over Support Tickets, Knowledge Base articles, and Marketing Assets. |
 | **Predictive AI** | **Snowpark ML** | 3 Custom ML Models: Churn Risk Prediction, Campaign ROI Forecasting, Ticket Priority Classification. |
-| **Orchestration** | **Cortex Agents** | A unified agent that intelligently routes queries to the correct tool or model. |
+| **Customer Success Automation** | **Python Stored Procedures** | Automated engagement workflows with A/B testing for churn prevention, upsell campaigns, and onboarding. |
+| **Orchestration** | **Cortex Agents** | A unified agent that intelligently routes queries to the correct tool or model, and triggers automated actions. |
 
 ---
 
@@ -32,7 +33,7 @@ The solution leverages the full power of the Snowflake AI Data Cloud, integratin
 ├── docs/
 │   ├── HOOTSUITE_SETUP_GUIDE.md    # 📚 DETAILED SETUP INSTRUCTIONS
 │   ├── PROJECT_SUMMARY.md          # High-level executive summary
-│   ├── hootsuite_questions.md      # Test bank of 15 sample questions
+│   ├── hootsuite_questions.md      # Test bank of sample questions
 │   ├── architecture_diagram.svg    # System architecture visualization
 │   └── setup_flow_diagram.svg      # Setup process visualization
 ├── notebooks/
@@ -44,7 +45,8 @@ The solution leverages the full power of the Snowflake AI Data Cloud, integratin
 │   ├── views/                      # 3️⃣ Analytical & Semantic Views
 │   ├── search/                     # 4️⃣ Cortex Search Services
 │   ├── ml/                         # 5️⃣ SQL Wrappers for ML Models
-│   └── agent/                      # 6️⃣ Final Agent Configuration
+│   ├── procedures/                 # 6️⃣ Customer Engagement Automation
+│   └── agent/                      # 7️⃣ Final Agent Configuration
 └── README.md                       # This file
 ```
 
@@ -58,23 +60,32 @@ Follow the **[Detailed Setup Guide](docs/HOOTSUITE_SETUP_GUIDE.md)** for step-by
 
 ![Setup Flow](docs/setup_flow_diagram.svg)
 
-1.  **Initialize Environment**: Create database, schema, and tables.
-2.  **Hydrate Data**: Generate 200,000+ rows of synthetic production-grade data.
-3.  **Deploy Semantic Layer**: Create views optimized for LLM understanding.
-4.  **Enable Search**: Index unstructured text data using Cortex Search.
-5.  **Train Models**: Train and register ML models using Snowpark.
-6.  **Launch Agent**: Compile the final Intelligence Agent.
+1.  **Initialize Environment** (Files 1-2): Create database, schema, and tables.
+2.  **Hydrate Data** (File 3): Generate 200,000+ rows of synthetic production-grade data.
+3.  **Deploy Views** (Files 4-5): Create analytical, feature, and semantic views.
+4.  **Enable Search** (File 6): Index unstructured text data using Cortex Search.
+5.  **Train Models** (Notebook): Train and register ML models using Snowpark.
+6.  **Create ML Functions** (File 7): Expose ML models as SQL functions.
+7.  **Deploy Automation** (File 9): Create customer engagement automation procedures.
+8.  **Launch Agent** (File 8): Compile the final Intelligence Agent with all capabilities.
 
 ---
 
 ## 💡 Example Use Cases
 
-Once deployed, the agent can answer complex business questions:
+Once deployed, the agent can answer complex business questions and take automated actions:
 
+**Analytics & Insights:**
 *   **"Which marketing campaigns are predicted to have High ROI?"** (ML + Semantic View)
 *   **"Show me the churn risk distribution for Retail customers."** (Semantic View)
 *   **"Find support tickets about 'login issues' and summarize the resolutions."** (Cortex Search)
 *   **"What is the average engagement rate for video posts on Instagram?"** (Semantic View)
+
+**Automated Actions:**
+*   **"Trigger engagement for customer CUST000289 with churn prevention using variant A"** (Customer Success Automation)
+*   Automatically sends personalized re-engagement emails
+*   Schedules account health reviews for high-risk customers
+*   Logs all actions for A/B testing analysis
 
 ---
 
