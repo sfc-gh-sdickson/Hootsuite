@@ -132,7 +132,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
     - tool_spec:
         type: "generic"
         name: "TriggerCustomerEngagement"
-        description: "Triggers automated customer success workflows including personalized re-engagement emails, account health reviews, and engagement tracking with A/B testing. Use when users ask to engage at-risk customers, trigger churn prevention, schedule account reviews, or run customer engagement campaigns."
+        description: "Triggers automated customer success workflows including personalized re-engagement emails, account health reviews, and engagement tracking with A/B testing. Use when users ask to engage at-risk customers, trigger churn prevention, schedule account reviews, or run customer engagement campaigns. Always use variant A unless user specifies B."
         input_schema:
           type: "object"
           properties:
@@ -144,8 +144,8 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
               description: "Type of engagement: CHURN_PREVENTION, UPSELL, or ONBOARDING"
             AB_TEST_VARIANT:
               type: "string"
-              description: "A/B test variant (A or B), defaults to A"
-          required: ["CUSTOMER_ID", "ENGAGEMENT_TYPE"]
+              description: "A/B test variant, must be either A or B"
+          required: ["CUSTOMER_ID", "ENGAGEMENT_TYPE", "AB_TEST_VARIANT"]
 
   tool_resources:
     # Semantic View Resources
