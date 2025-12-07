@@ -136,16 +136,16 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         input_schema:
           type: "object"
           properties:
-            customer_id_param:
+            CUSTOMER_ID:
               type: "string"
               description: "Unique customer identifier"
-            engagement_type:
+            ENGAGEMENT_TYPE:
               type: "string"
               description: "Type of engagement: CHURN_PREVENTION, UPSELL, or ONBOARDING"
-            ab_test_variant:
+            AB_TEST_VARIANT:
               type: "string"
               description: "A/B test variant (A or B), defaults to A"
-          required: ["customer_id_param", "engagement_type"]
+          required: ["CUSTOMER_ID", "ENGAGEMENT_TYPE"]
 
   tool_resources:
     # Semantic View Resources

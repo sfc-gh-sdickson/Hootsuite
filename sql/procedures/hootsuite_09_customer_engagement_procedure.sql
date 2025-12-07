@@ -28,9 +28,9 @@ CREATE TABLE IF NOT EXISTS CUSTOMER_ENGAGEMENT_RESULTS (
 -- Customer Engagement Automation Procedure
 -- ============================================================================
 CREATE OR REPLACE PROCEDURE TRIGGER_CUSTOMER_ENGAGEMENT(
-    customer_id_param STRING,
-    engagement_type STRING,
-    ab_test_variant STRING DEFAULT 'A'
+    CUSTOMER_ID STRING,
+    ENGAGEMENT_TYPE STRING,
+    AB_TEST_VARIANT STRING DEFAULT 'A'
 )
 RETURNS STRING
 LANGUAGE PYTHON
@@ -41,14 +41,14 @@ AS $$
 import requests
 import json
 
-def main(session, customer_id_param, engagement_type, ab_test_variant):
+def main(session, CUSTOMER_ID, ENGAGEMENT_TYPE, AB_TEST_VARIANT):
     """
     Trigger automated customer engagement workflows
     
     Args:
-        customer_id_param: Customer identifier
-        engagement_type: Type of engagement (CHURN_PREVENTION, UPSELL, ONBOARDING)
-        ab_test_variant: A/B test variant (A or B)
+        CUSTOMER_ID: Customer identifier
+        ENGAGEMENT_TYPE: Type of engagement (CHURN_PREVENTION, UPSELL, ONBOARDING)
+        AB_TEST_VARIANT: A/B test variant (A or B)
     
     Returns:
         Summary of actions taken
@@ -70,7 +70,7 @@ def main(session, customer_id_param, engagement_type, ab_test_variant):
             ON c.customer_id = sa.customer_id
         LEFT JOIN HOOTSUITE_INTELLIGENCE.RAW.SUPPORT_TICKETS t 
             ON c.customer_id = t.customer_id AND t.status = 'OPEN'
-        WHERE c.customer_id = '{customer_id_param}'
+        WHERE c.customer_id = '{CUSTOMER_ID}'
         GROUP BY c.customer_id, c.customer_name, c.industry, c.plan_type, 
                  c.churn_risk_score, c.annual_revenue_millions
     """
@@ -78,12 +78,12 @@ def main(session, customer_id_param, engagement_type, ab_test_variant):
     customer_data = session.sql(customer_query).collect()
     
     if not customer_data:
-        return f"ERROR: Customer {customer_id_param} not found"
+        return f"ERROR: Customer {CUSTOMER_ID} not found"
     
     customer = customer_data[0]
     
     # 2. A/B Testing Logic - Determine engagement strategy
-    if ab_test_variant == 'A':
+    if AB_TEST_VARIANT == 'A':
         email_template = 'high_touch_personalized'
         offer_type = 'premium_training_session'
         priority = 'high'
@@ -126,7 +126,7 @@ def main(session, customer_id_param, engagement_type, ab_test_variant):
     if customer['CHURN_RISK_SCORE'] > 0.7 or customer['ANNUAL_REVENUE_MILLIONS'] > 100:
         review_scheduled = True
         calendar_payload = {
-            'customer_id': customer_id_param,
+            'customer_id': CUSTOMER_ID,
             'priority': priority,
             'suggested_times': ['next_business_day'],
             'csm_assignment': 'auto_assign',
@@ -140,9 +140,9 @@ def main(session, customer_id_param, engagement_type, ab_test_variant):
         (customer_id, engagement_type, ab_test_variant, email_sent, 
          account_review_scheduled, churn_risk_score, executed_at)
         VALUES (
-            '{customer_id_param}', 
-            '{engagement_type}', 
-            '{ab_test_variant}',
+            '{CUSTOMER_ID}', 
+            '{ENGAGEMENT_TYPE}', 
+            '{AB_TEST_VARIANT}',
             {email_sent},
             {review_scheduled},
             {customer['CHURN_RISK_SCORE']},
@@ -153,10 +153,10 @@ def main(session, customer_id_param, engagement_type, ab_test_variant):
     
     # 5. Return summary
     summary = {
-        'customer_id': customer_id_param,
+        'customer_id': CUSTOMER_ID,
         'customer_name': customer['CUSTOMER_NAME'],
         'churn_risk_score': float(customer['CHURN_RISK_SCORE']),
-        'variant': ab_test_variant,
+        'variant': AB_TEST_VARIANT,
         'email_sent': email_sent,
         'account_review_scheduled': review_scheduled,
         'actions': actions_taken
