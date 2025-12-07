@@ -2,7 +2,7 @@
 -- Hootsuite Streamlit App Generator Procedure
 -- ============================================================================
 -- Purpose: Automatically generate, deploy, and return clickable link to Streamlit app
--- Uses CREATE STREAMLIT AS $$code$$ executed via session.sql()
+-- Uses CREATE STREAMLIT AS $code$ with single $ delimiter
 -- ============================================================================
 
 USE DATABASE HOOTSUITE_INTELLIGENCE;
@@ -19,7 +19,9 @@ CREATE OR REPLACE PROCEDURE GENERATE_STREAMLIT_FROM_CHART(
 )
 RETURNS VARIANT
 LANGUAGE PYTHON
+RUNTIME_VERSION = '3.9'
 PACKAGES = ('snowflake-snowpark-python')
+HANDLER = 'main' 
 AS $$
 import json
 
@@ -97,7 +99,7 @@ if st.button("🔄 Refresh Data"):
         QUERY_WAREHOUSE = 'HOOTSUITE_WH'
         TITLE = '{CHART_TITLE} - Auto Generated'
         AS
-        $${streamlit_code}$$
+        ${streamlit_code}$
         """
         
         session.sql(create_sql).collect()
@@ -143,4 +145,3 @@ GRANT CREATE STREAMLIT ON SCHEMA HOOTSUITE_INTELLIGENCE.ANALYTICS TO ROLE PUBLIC
 -- );
 
 SELECT 'Streamlit App Generator Procedure created successfully' AS STATUS;
-
