@@ -22,8 +22,7 @@ The solution leverages the full power of the Snowflake AI Data Cloud, integratin
 | **Semantic Search** | **Cortex Search** | Vector search over Support Tickets, Knowledge Base articles, and Marketing Assets. |
 | **Predictive AI** | **Snowpark ML** | 3 Custom ML Models: Churn Risk Prediction, Campaign ROI Forecasting, Ticket Priority Classification. |
 | **Customer Success Automation** | **Python Stored Procedures** | Automated engagement workflows with A/B testing for churn prevention, upsell campaigns, and onboarding. |
-| **Streamlit App Generation** | **Python Stored Procedures** | Automatically generates interactive data exploration apps from any chart or query result. |
-| **Orchestration** | **Cortex Agents** | A unified agent that intelligently routes queries, triggers actions, and creates apps on demand. |
+| **Orchestration** | **Cortex Agents** | A unified agent that intelligently routes queries to the correct tool or model, and triggers automated actions. |
 
 ---
 
@@ -68,8 +67,7 @@ Follow the **[Detailed Setup Guide](docs/HOOTSUITE_SETUP_GUIDE.md)** for step-by
 5.  **Train Models** (Notebook): Train and register ML models using Snowpark.
 6.  **Create ML Functions** (File 7): Expose ML models as SQL functions.
 7.  **Deploy Customer Automation** (File 9): Create customer engagement automation procedures.
-8.  **Deploy App Generator** (File 10): Create Streamlit app generation procedure.
-9.  **Launch Agent** (File 8): Compile the final Intelligence Agent with all capabilities.
+8.  **Launch Agent** (File 8): Compile the final Intelligence Agent with all capabilities.
 
 ---
 
@@ -88,13 +86,6 @@ Once deployed, the agent can answer complex business questions and take automate
 *   Automatically sends personalized re-engagement emails
 *   Schedules account health reviews for high-risk customers
 *   Logs all actions for A/B testing analysis
-
-**Interactive App Generation:**
-*   **"Create a Streamlit app to analyze campaign performance by objective with statistical analysis"** (Streamlit Generator)
-*   Automatically generates a complete interactive data exploration app
-*   Includes dynamic filtering, multiple chart types, and statistical analysis
-*   Enables CSV/JSON export and correlation analysis
-*   Perfect for sharing insights with stakeholders or conducting ad-hoc analysis
 
 ---
 

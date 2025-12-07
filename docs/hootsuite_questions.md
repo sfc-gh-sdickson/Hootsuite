@@ -84,32 +84,3 @@ This document contains sample questions that can be answered by the Hootsuite In
     *   *Follow-up*: Use this to identify at-risk customers, then trigger engagement workflows
     *   *Workflow*: Analytics → Identify Risk → Trigger Automation
 
-## 5. Streamlit App Generation
-*Target: Streamlit App Generator Procedure*
-
-1.  **"Create a Streamlit app to analyze campaign performance by objective with statistical analysis"**
-    *   *Tool*: `GenerateStreamlitApp`
-    *   *Intent*: Generate an interactive data exploration app
-    *   *Parameters*:
-        - CHART_SQL: Query for campaign performance by objective
-        - CHART_TITLE: "Campaign Performance Analysis"
-        - ANALYSIS_TYPE: "statistical"
-    *   *Features Generated*:
-        - Interactive data table with sorting
-        - Multiple chart types (bar, scatter, correlation heatmap)
-        - Dynamic filtering by campaign attributes
-        - Statistical analysis (descriptive stats, correlations)
-        - Data export (CSV, JSON, Markdown)
-
-2.  **"Build me an app to explore Instagram engagement rates over time"**
-    *   *Tool*: `GenerateStreamlitApp`
-    *   *Intent*: Time-series analysis application
-    *   *Analysis Type*: "time_series"
-    *   *Result*: Interactive dashboard with trend visualization and filtering
-
-3.  **"Generate a dashboard from the customer churn risk data for the executive team"**
-    *   *Tool*: `GenerateStreamlitApp`
-    *   *Intent*: Executive dashboard creation
-    *   *Analysis Type*: "exploratory"
-    *   *Result*: Professional dashboard with key metrics, charts, and export functionality
-
