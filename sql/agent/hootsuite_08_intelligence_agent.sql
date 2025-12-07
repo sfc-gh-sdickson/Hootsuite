@@ -27,9 +27,9 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
       tokens: 32000
 
   instructions:
-    response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about customers, campaigns, and engagement data. When using ML predictions, explain the risk levels clearly. You can trigger automated customer engagement workflows for at-risk customers. Always cite data sources."
-    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health and support analysis use CustomerHealthAnalyst. For social media performance, posts, and engagement use SocialPerformanceAnalyst. For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function. To trigger customer engagement workflows use TriggerCustomerEngagement."
-    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. You can automate customer success workflows including churn prevention emails and account reviews. Always provide data-driven insights based on available data."
+    response: "You are a helpful social media intelligence assistant. Provide clear, accurate answers about customers, campaigns, and engagement data. When using ML predictions, explain the risk levels clearly. You can trigger automated customer engagement workflows and deploy interactive Streamlit apps with launch buttons. Always cite data sources."
+    orchestration: "For campaign performance questions use CampaignAnalyst. For customer health and support analysis use CustomerHealthAnalyst. For social media performance, posts, and engagement use SocialPerformanceAnalyst. For support tickets search use SupportTicketSearch. For help articles search use KnowledgeBaseSearch. For marketing assets search use MarketingAssetSearch. For ML predictions use the appropriate prediction function. To trigger customer engagement workflows use TriggerCustomerEngagement. To create an interactive Streamlit app use DeployStreamlitApp with the query, always use exploratory unless user specifies statistical."
+    system: "You are an expert social media intelligence agent for Hootsuite. You help analyze campaign performance, customer health, engagement metrics, and support operations. You can automate customer success workflows and deploy interactive Streamlit applications with clickable launch links. Always provide data-driven insights based on available data."
     sample_questions:
       - question: "How many active customers do we have?"
         answer: "I'll query CustomerHealthAnalyst to count customers where active_status is ACTIVE."
@@ -57,6 +57,8 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
         answer: "I'll use SocialPerformanceAnalyst to sum follower_count across all accounts."
       - question: "Trigger engagement for customer CUST000289 with churn prevention using variant A"
         answer: "I'll use TriggerCustomerEngagement to send personalized outreach and schedule account review for this high-risk customer using A/B test variant A."
+      - question: "Create a Streamlit app for platform engagement analysis"
+        answer: "I'll use DeployStreamlitApp with a query for platform engagement data using exploratory analysis type, and return a launch link."
 
   tools:
     # Semantic Views for Cortex Analyst (Text-to-SQL)
@@ -147,6 +149,25 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
               description: "A/B test variant, must be either A or B"
           required: ["CUSTOMER_ID", "ENGAGEMENT_TYPE", "AB_TEST_VARIANT"]
 
+    # Streamlit Auto-Deploy
+    - tool_spec:
+        type: "generic"
+        name: "DeployStreamlitApp"
+        description: "Automatically creates and deploys a Streamlit app with a clickable launch button. Use when users want to create an app or dashboard from data. Always use exploratory unless user specifies statistical."
+        input_schema:
+          type: "object"
+          properties:
+            CHART_SQL:
+              type: "string"
+              description: "SQL query to visualize"
+            CHART_TITLE:
+              type: "string"
+              description: "Title for the app"
+            ANALYSIS_TYPE:
+              type: "string"
+              description: "Type: exploratory or statistical"
+          required: ["CHART_SQL", "CHART_TITLE", "ANALYSIS_TYPE"]
+
   tool_resources:
     # Semantic View Resources
     CampaignAnalyst:
@@ -206,6 +227,15 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
     TriggerCustomerEngagement:
       type: "procedure"
       identifier: "HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT"
+      execution_environment:
+        type: "warehouse"
+        warehouse: "HOOTSUITE_WH"
+        query_timeout: 120
+
+    # Streamlit App Auto-Deploy Procedure
+    DeployStreamlitApp:
+      type: "procedure"
+      identifier: "HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART"
       execution_environment:
         type: "warehouse"
         warehouse: "HOOTSUITE_WH"
