@@ -54,15 +54,12 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CAMPAIGN_ANALYTICS
     campaigns.total_budget AS SUM(campaigns.budget_allocated),
     campaigns.total_spend AS SUM(campaigns.budget_spent),
     campaigns.avg_budget AS AVG(campaigns.budget_allocated),
-    campaigns.budget_utilization AS (SUM(campaigns.budget_spent)::FLOAT / NULLIF(SUM(campaigns.budget_allocated), 0)),
     posts.total_posts AS COUNT(DISTINCT posts.post_id),
-    posts.posts_per_campaign AS (COUNT(DISTINCT posts.post_id)::FLOAT / NULLIF(COUNT(DISTINCT campaigns.campaign_id), 0)),
     metrics.total_impressions AS SUM(metrics.impressions),
     metrics.total_clicks AS SUM(metrics.clicks),
     metrics.total_engagement AS SUM(metrics.likes + metrics.shares + metrics.comments),
     metrics.avg_engagement_rate AS AVG(metrics.engagement_rate),
-    metrics.avg_impressions AS AVG(metrics.impressions),
-    metrics.click_through_rate AS (SUM(metrics.clicks)::FLOAT / NULLIF(SUM(metrics.impressions), 0))
+    metrics.avg_impressions AS AVG(metrics.impressions)
   )
   COMMENT = 'Semantic view for campaign performance, budget, and engagement metrics';
 
@@ -122,12 +119,10 @@ CREATE OR REPLACE SEMANTIC VIEW SV_CUSTOMER_HEALTH_ANALYTICS
     customers.avg_revenue AS AVG(customers.annual_revenue_millions),
     customers.avg_employees AS AVG(customers.employee_count),
     accounts.total_accounts AS COUNT(DISTINCT accounts.account_id),
-    accounts.accounts_per_customer AS (COUNT(DISTINCT accounts.account_id)::FLOAT / NULLIF(COUNT(DISTINCT customers.customer_id), 0)),
     tickets.total_tickets AS COUNT(DISTINCT tickets.ticket_id),
     tickets.open_tickets AS COUNT_IF(tickets.status = 'OPEN'),
     tickets.urgent_tickets AS COUNT_IF(tickets.priority = 'URGENT'),
-    tickets.avg_resolution_time_hours AS AVG(TIMESTAMPDIFF(hour, tickets.created_date, tickets.closed_date)),
-    tickets.tickets_per_customer AS (COUNT(DISTINCT tickets.ticket_id)::FLOAT / NULLIF(COUNT(DISTINCT customers.customer_id), 0))
+    tickets.avg_resolution_time_hours AS AVG(TIMESTAMPDIFF(hour, tickets.created_date, tickets.closed_date))
   )
   COMMENT = 'Semantic view for customer health, churn risk, and support ticket analysis';
 
@@ -185,7 +180,6 @@ CREATE OR REPLACE SEMANTIC VIEW SV_SOCIAL_PERFORMANCE
     accounts.avg_followers AS AVG(accounts.follower_count),
     posts.total_posts AS COUNT(DISTINCT posts.post_id),
     posts.published_posts AS COUNT_IF(posts.status = 'PUBLISHED'),
-    posts.posts_per_account AS (COUNT(DISTINCT posts.post_id)::FLOAT / NULLIF(COUNT(DISTINCT accounts.account_id), 0)),
     metrics.total_reach AS SUM(metrics.reach),
     metrics.total_impressions AS SUM(metrics.impressions),
     metrics.total_likes AS SUM(metrics.likes),
