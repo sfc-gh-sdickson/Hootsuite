@@ -133,12 +133,32 @@ Create automated workflows for customer success team with A/B testing capabiliti
     SELECT * FROM HOOTSUITE_INTELLIGENCE.ANALYTICS.CUSTOMER_ENGAGEMENT_RESULTS LIMIT 5;
     ```
 
+#### Step 10: Deploy Streamlit App Generator
+Create automated Streamlit app generation from chart queries.
+*   **Script**: `sql/procedures/hootsuite_10_streamlit_app_generator.sql`
+*   **Action**: Run all queries.
+*   **What it does**: 
+    *   Creates a Python stored procedure that generates complete Streamlit applications
+    *   Generates apps with interactive filtering, multiple visualizations, and statistical analysis
+    *   Includes data export capabilities (CSV, JSON, Markdown)
+    *   Enables users to create custom dashboards from any query result
+*   **Verification**:
+    ```sql
+    -- Test the procedure with a simple query
+    CALL HOOTSUITE_INTELLIGENCE.ANALYTICS.GENERATE_STREAMLIT_FROM_CHART(
+        'SELECT platform, COUNT(*) as post_count FROM HOOTSUITE_INTELLIGENCE.RAW.POSTS p JOIN HOOTSUITE_INTELLIGENCE.RAW.SOCIAL_ACCOUNTS sa ON p.account_id = sa.account_id GROUP BY platform',
+        'Platform Post Distribution',
+        'exploratory'
+    );
+    -- Should return success message with app details
+    ```
+
 ---
 
 ### Phase 5: Orchestration (The Agent)
 
-#### Step 10: Configure Intelligence Agent
-Assemble all tools (including automation) into the final conversational agent.
+#### Step 11: Configure Intelligence Agent
+Assemble all tools (including automation and app generation) into the final conversational agent.
 *   **Script**: `sql/agent/hootsuite_08_intelligence_agent.sql`
 *   **Action**: Run all queries.
 *   **Verification**:
@@ -147,7 +167,7 @@ Assemble all tools (including automation) into the final conversational agent.
     -- Should list HOOTSUITE_INTELLIGENCE_AGENT
     
     DESC AGENT HOOTSUITE_INTELLIGENCE_AGENT;
-    -- Should show 10 tools including TriggerCustomerEngagement
+    -- Should show 11 tools including TriggerCustomerEngagement and GenerateStreamlitApp
     ```
 
 ---
@@ -176,6 +196,15 @@ This will:
 - Schedule priority account review
 - Log all actions to CUSTOMER_ENGAGEMENT_RESULTS table
 
+*App Generation:*
+> "Create a Streamlit app to analyze campaign performance by objective with statistical analysis"
+
+This will:
+- Generate a complete interactive Streamlit application
+- Include the SQL query for campaign performance data
+- Add filtering, visualization, and statistical analysis features
+- Provide code preview and deployment instructions
+
 ---
 
 ## 🆘 Troubleshooting
@@ -198,6 +227,12 @@ This will:
     - Test directly before testing through agent: `CALL TRIGGER_CUSTOMER_ENGAGEMENT('CUST000001', 'CHURN_PREVENTION', 'A')`
     - Customer ID must exist in the data - use valid customer IDs from: `SELECT customer_id FROM RAW.CUSTOMERS LIMIT 10`
 
+*   **Streamlit App Generator Errors**:
+    - Ensure File 10 (`hootsuite_10_streamlit_app_generator.sql`) was run successfully
+    - Verify procedure exists: `SHOW PROCEDURES LIKE 'GENERATE_STREAMLIT_FROM_CHART'`
+    - Test directly: `CALL GENERATE_STREAMLIT_FROM_CHART('SELECT * FROM RAW.CUSTOMERS LIMIT 100', 'Test App', 'exploratory')`
+    - The procedure generates app code but manual deployment may be required depending on permissions
+
 ### Execution Order Issues
 
 **If you make any changes to data or views, follow this order:**
@@ -207,7 +242,8 @@ This will:
 3. Notebook (All cells) → Retrain ALL ML models
 4. File 7 (ML Functions) → Recreate functions
 5. File 5 (Semantic Views) → Recreate semantic layer
-6. File 9 (Automation) → Recreate procedure
-7. File 10 (Agent) → Recreate agent
+6. File 9 (Customer Automation) → Recreate engagement procedure
+7. File 10 (Streamlit Generator) → Recreate app generator procedure
+8. File 8 (Agent) → Recreate agent with all tools
 
 **Skipping steps will cause type mismatches and "function not found" errors.**

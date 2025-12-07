@@ -33,6 +33,15 @@ The agent can trigger **Automated Engagement Workflows**:
 *   **Action Tracking**: Logs all engagement activities to a results table for analysis.
 *   **Integration Ready**: Designed to connect with external email/calendar APIs.
 
+### 5. Streamlit App Generation (Python Stored Procedures)
+The agent can **Automatically Generate Interactive Data Apps**:
+*   **From Any Chart**: Takes SQL queries and generates complete Streamlit applications.
+*   **Rich Features**: Interactive filtering, multiple visualization types, statistical analysis.
+*   **Export Capabilities**: CSV, JSON, and Markdown report downloads.
+*   **Customizable Analysis**: Supports exploratory, statistical, and time-series analysis modes.
+*   **Instant Deployment**: Generated apps connect directly to live Snowflake data.
+*   **Shareable**: Apps can be deployed in Snowsight for team collaboration.
+
 ## Architecture Highlights
 *   **Synthetic Data Generation**: Creates ~200k rows of realistic Hootsuite data (Customers, Posts, Tickets, etc.).
 *   **Snowflake Notebooks**: Python-based ML training pipeline using Snowpark ML.
