@@ -98,8 +98,9 @@ if st.button("🔄 Refresh Data"):
         MAIN_FILE = 'app.py'  
         QUERY_WAREHOUSE = 'HOOTSUITE_WH'
         TITLE = '{CHART_TITLE} - Auto Generated'
+        RUNTIME_VERSION = '3.8'
         AS
-        ${streamlit_code}$
+        $${streamlit_code}$$
         """
         
         session.sql(create_sql).collect()
