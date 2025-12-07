@@ -204,7 +204,7 @@ CREATE OR REPLACE AGENT HOOTSUITE_INTELLIGENCE_AGENT
 
     # Customer Engagement Automation Procedure
     TriggerCustomerEngagement:
-      type: "procedure"
+      type: "function"
       identifier: "HOOTSUITE_INTELLIGENCE.ANALYTICS.TRIGGER_CUSTOMER_ENGAGEMENT"
       execution_environment:
         type: "warehouse"
